@@ -1,0 +1,17 @@
+{
+  "name": "node-schematron",
+  "version": "0.0.1",
+  "main": "index.js",
+  "bin": {
+    "schematron": "./bin/schematron.js"
+  },
+  "scripts": {
+    "test": "node ./bin/schematron.js \"test/xml/random-dita.schematron.xml\" \"test/xml/random-dita/*.dita\""
+  },
+  "dependencies": {
+    "ask-nicely": "^3.0.2",
+    "fontoxpath": "^3.6.0",
+    "globby": "^6.1.0",
+    "slimdom-sax-parser": "^1.2.1"
+  }
+}

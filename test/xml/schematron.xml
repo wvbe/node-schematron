@@ -1,0 +1,9 @@
+<sch:schema
+	xmlns:sch="http://purl.oclc.org/dsdl/schematron" title="Rules for [type] documents">
+	<sch:pattern name="[your name]">
+		<sch:rule context="//tip">
+			<sch:report test="preceding-sibling::*">Yep</sch:report>
+			<sch:assert test="()">Nope</sch:assert>
+		</sch:rule>
+	</sch:pattern>
+</sch:schema>

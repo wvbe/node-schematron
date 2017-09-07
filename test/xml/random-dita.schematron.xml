@@ -1,0 +1,19 @@
+
+<schema xmlns="http://purl.oclc.org/dsdl/schematron">
+	<pattern>
+		<rule context="/topic">
+			<assert test="child::title">Must have a title</assert>
+		</rule>
+		<rule context="//(u|b|i)">
+			<let name="name" value="name()"/>
+			<assert test="not(following-sibling::node()[1]/name() = $name) and not(preceding-sibling::node()[1]/name() = $name)">
+				An inline "<name />" is not followed by an element of the same name
+			</assert>
+		</rule>
+		<rule context="//note">
+			<assert test="not(@type = 'fastpath')">
+				"fastpath" is not used as note type
+			</assert>
+		</rule>
+	</pattern>
+</schema>

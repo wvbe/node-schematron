@@ -1,0 +1,166 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`3. Message formatting <name> 1`] = `
+Object {
+  "isAssertion": false,
+  "isReport": true,
+  "message": Array [
+    "
+					  This is the heaviest ",
+    Object {
+      "$type": "name",
+    },
+    " in the ",
+    Object {
+      "$type": "name",
+      "path": "parent::*",
+    },
+  ],
+  "test": "weight >= max(../*/weight)",
+}
+`;
+
+exports[`3. Message formatting <name> 2`] = `
+Array [
+  Array [
+    Array [
+      Object {
+        "context": <animal
+          carnivore="no"
+          sex="female"
+        >
+          
+				  
+          <species>
+            pony
+          </species>
+          
+				  
+          <weight>
+            180
+          </weight>
+          
+				  
+          <age>
+            5
+          </age>
+          
+			  
+        </animal>,
+        "results": Array [
+          null,
+        ],
+      },
+      Object {
+        "context": <animal
+          carnivore="yes"
+          sex="male"
+        >
+          
+				  
+          <species>
+            lion
+          </species>
+          
+				  
+          <weight>
+            200
+          </weight>
+          
+				  
+          <age>
+            30
+          </age>
+          
+			  
+        </animal>,
+        "results": Array [
+          "
+					  This is the heaviest animal in the jungle",
+        ],
+      },
+      Object {
+        "context": <animal
+          carnivore="no"
+          sex="male"
+        >
+          
+				  
+          <species>
+            otter
+          </species>
+          
+				  
+          <weight>
+            6
+          </weight>
+          
+				  
+          <age>
+            23
+          </age>
+          
+			  
+        </animal>,
+        "results": Array [
+          null,
+        ],
+      },
+    ],
+  ],
+]
+`;
+
+exports[`3. Message formatting <value-of> 1`] = `
+Object {
+  "isAssertion": false,
+  "isReport": true,
+  "message": Array [
+    "
+					  This animal is ",
+    Object {
+      "$type": "value-of",
+      "select": "weight",
+    },
+    " kilos heavy!",
+  ],
+  "test": "true()",
+}
+`;
+
+exports[`3. Message formatting <value-of> 2`] = `
+Array [
+  Array [
+    Array [
+      Object {
+        "context": <animal
+          carnivore="no"
+          sex="female"
+        >
+          
+				  
+          <species>
+            pony
+          </species>
+          
+				  
+          <weight>
+            180
+          </weight>
+          
+				  
+          <age>
+            5
+          </age>
+          
+			  
+        </animal>,
+        "results": Array [
+          "
+					  This animal is 180 kilos heavy!",
+        ],
+      },
+    ],
+  ],
+]
+`;

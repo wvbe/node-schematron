@@ -1,0 +1,108 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`1. Simplest Schematron validation getSchematronRequest 1`] = `
+Object {
+  "patterns": Array [
+    Object {
+      "name": null,
+      "rules": Array [
+        Object {
+          "context": "//animal",
+          "tests": Array [
+            Object {
+              "isAssertion": false,
+              "isReport": true,
+              "message": Array [
+                "An adult lion",
+              ],
+              "test": "species = 'lion' and age > 3",
+            },
+            Object {
+              "isAssertion": false,
+              "isReport": true,
+              "message": Array [
+                "An adult elephant",
+              ],
+              "test": "species = 'elephant' and age > 18",
+            },
+            Object {
+              "isAssertion": true,
+              "isReport": false,
+              "message": Array [
+                "The animal is alive",
+              ],
+              "test": "age < 999",
+            },
+          ],
+          "variables": Array [],
+        },
+      ],
+    },
+  ],
+  "title": null,
+}
+`;
+
+exports[`1. Simplest Schematron validation getSchematronResults 1`] = `
+Object {
+  "context": <animal
+    carnivore="yes"
+    sex="female"
+  >
+    
+					
+    <species>
+      lion
+    </species>
+    
+					
+    <weight>
+      200
+    </weight>
+    
+					
+    <age>
+      10
+    </age>
+    
+				
+  </animal>,
+  "results": Array [
+    "An adult lion",
+    null,
+    null,
+  ],
+}
+`;
+
+exports[`1. Simplest Schematron validation getSchematronResults 2`] = `
+Object {
+  "context": <animal
+    carnivore="no"
+    sex="male"
+  >
+    
+					
+    <species>
+      elephant
+    </species>
+    
+					
+    <weight>
+      3000
+    </weight>
+    
+					
+    <age>
+      21
+    </age>
+    
+				
+  </animal>,
+  "results": Array [
+    null,
+    "An adult elephant",
+    null,
+  ],
+}
+`;
