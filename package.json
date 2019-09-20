@@ -1,17 +1,36 @@
 {
-  "name": "node-schematron",
-  "version": "0.0.1",
-  "main": "index.js",
-  "bin": {
-    "schematron": "./bin/schematron.js"
-  },
-  "scripts": {
-    "test": "node ./bin/schematron.js \"test/xml/random-dita.schematron.xml\" \"test/xml/random-dita/*.dita\""
-  },
-  "dependencies": {
-    "ask-nicely": "^3.0.2",
-    "fontoxpath": "^3.6.0",
-    "globby": "^6.1.0",
-    "slimdom-sax-parser": "^1.2.1"
-  }
+	"name": "node-schematron",
+	"version": "0.0.1",
+	"description": "A pure-JS Schematron implementation for Node, browsers and CLI",
+	"repository": "wvbe/node-schematron",
+	"author": {
+		"name": "Wybe Minnebo",
+		"email": "wybe@x-54.com",
+		"url": "https://github.com/wvbe"
+	},
+	"license": "MIT",
+	"homepage": "https://github.com/wvbe/node-schematron",
+	"keywords": [
+		"schematron",
+		"xml",
+		"validation",
+		"terminal"
+	],
+	"main": "index.js",
+	"directories": {
+		"lib": "./src",
+		"test": "./test"
+	},
+	"bin": {
+		"schematron": "./bin/schematron.js"
+	},
+	"scripts": {
+		"demo": "node ./bin/schematron.js \"test/xml/random-dita.schematron.xml\" \"test/xml/random-dita/*.dita\""
+	},
+	"dependencies": {
+		"ask-nicely": "^3.0.2",
+		"fontoxpath": "^3.6.0",
+		"globby": "^6.1.0",
+		"slimdom-sax-parser": "^1.2.1"
+	}
 }
