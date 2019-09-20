@@ -1,4 +1,9 @@
-const { evaluateXPath, evaluateXPathToBoolean, evaluateXPathToNodes, evaluateXPathToString } = require('fontoxpath');
+const {
+	evaluateXPath,
+	evaluateXPathToBoolean,
+	evaluateXPathToNodes,
+	evaluateXPathToString
+} = require('fontoxpath');
 
 function serializeRuleMessagePart(context, variables, piece) {
 	if (typeof piece === 'string') {
@@ -17,9 +22,9 @@ function serializeRuleMessagePart(context, variables, piece) {
 }
 
 module.exports = (schematronRequest, documentDom) => {
-	return schematronRequest.patterns.map((pattern) =>
-		pattern.rules.map((rule) =>
-			evaluateXPathToNodes(rule.context, documentDom, null).map((context) => {
+	return schematronRequest.patterns.map(pattern =>
+		pattern.rules.map(rule =>
+			evaluateXPathToNodes(rule.context, documentDom, null).map(context => {
 				const variables = rule.variables.reduce(
 					(mapping, variable) =>
 						Object.assign(mapping, {
@@ -31,7 +36,7 @@ module.exports = (schematronRequest, documentDom) => {
 				);
 				return {
 					context: context,
-					results: rule.tests.map((res) => {
+					results: rule.tests.map(res => {
 						const outcome = evaluateXPathToBoolean(res.test, context, null, variables);
 						if ((res.isReport && !outcome) || (res.isAssertion && outcome)) {
 							// These outcomes normally mean that a schematron engine does _not_ log a result here.
@@ -40,7 +45,9 @@ module.exports = (schematronRequest, documentDom) => {
 							return null;
 						}
 
-						const message = res.message.map(serializeRuleMessagePart.bind(undefined, context, variables));
+						const message = res.message.map(
+							serializeRuleMessagePart.bind(undefined, context, variables)
+						);
 						return message.join('');
 					})
 				};

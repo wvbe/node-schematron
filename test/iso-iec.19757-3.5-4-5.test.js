@@ -73,10 +73,7 @@ describe('ISO/IEC 19757-3:2016, Section 5.4.5, <let />', () => {
 	);
 
 	// TODO
-	xit(
-		'It is an error for a variable to be multiply defined in the current schema, phase, pattern and rule.',
-		() => {}
-	);
+	xit('It is an error for a variable to be multiply defined in the current schema, phase, pattern and rule.', () => {});
 
 	// ALREADY PROVEN
 	// "The variable is substituted into assertion tests and other expressions in the same rule before the test

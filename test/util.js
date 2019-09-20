@@ -11,8 +11,8 @@ module.exports = {
 	parseDom: sync,
 
 	//
-	test: (documentString, schematronString) => {
-		const request = getSchematronRequest(sync(schematronString));
+	test: (documentString, schematronString, phase) => {
+		const request = getSchematronRequest(sync(schematronString), phase);
 		const results = getSchematronResults(request, sync(documentString));
 		return { request, results };
 	}

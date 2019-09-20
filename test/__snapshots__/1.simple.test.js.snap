@@ -4,7 +4,7 @@ exports[`1. Simplest Schematron validation getSchematronRequest 1`] = `
 Object {
   "patterns": Array [
     Object {
-      "name": null,
+      "id": null,
       "rules": Array [
         Object {
           "context": "//animal",

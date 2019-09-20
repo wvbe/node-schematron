@@ -1,6 +1,6 @@
 {
 	"name": "node-schematron",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "A pure-JS Schematron implementation for Node, browsers and CLI",
 	"repository": "wvbe/node-schematron",
 	"author": {
@@ -22,7 +22,7 @@
 		"test": "./test"
 	},
 	"bin": {
-		"schematron": "./bin/schematron.js"
+		"node-schematron": "./bin/schematron.js"
 	},
 	"scripts": {
 		"demo": "node ./bin/schematron.js \"test/xml/random-dita.schematron.xml\" \"test/xml/random-dita/*.dita\""

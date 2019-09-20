@@ -61,7 +61,6 @@ function reduceResults(schematronResults, schematronRequest) {
 			const patternRequest = schematronRequest.patterns[patternIndex];
 			const $patternName = patternRequest.name;
 			const $rules = patternResult.reduce((all, contextResults, ruleIndex) => {
-
 				const ruleRequest = patternRequest.rules[ruleIndex];
 
 				const $contexts = contextResults.reduce((all, contextResult) => {
@@ -88,17 +87,17 @@ function reduceResults(schematronResults, schematronRequest) {
 						: all;
 				}, []);
 
-				return $contexts.length
-					? all.concat($contexts)
-					: all;
+				return $contexts.length ? all.concat($contexts) : all;
 			}, []);
 
-			return $rules.length ? all.concat([
-				{
-					$patternName,
-					$rules: $rules
-				}
-			]) : all;
+			return $rules.length
+				? all.concat([
+						{
+							$patternName,
+							$rules: $rules
+						}
+				  ])
+				: all;
 		}, []);
 
 		return $patterns.length ? all.concat([{ $fileName, $patterns: $patterns }]) : all;
@@ -144,10 +143,7 @@ new Command()
 			totalAsserts: 0,
 			totalReports: 0,
 			totalFiles: results.length
-		}
-
-		console.dir(cleanResults, { depth: 20, colors: true});
-		// return;
+		};
 
 		cleanResults.forEach(res => {
 			console.log('');
@@ -155,13 +151,7 @@ new Command()
 			console.group(fileGroupName);
 
 			res.$patterns.forEach(pattern => {
-				console.group(pattern.$patternName || '[unnamed pattern]');
-
 				pattern.$rules.forEach(rule => {
-
-					// Commenting this out for a sec, makes results hard to read on non-color terminals
-					// console.group(ASCII_COLOR_DIM + rule.$context + ASCII_COLOR_DEFAULT);
-
 					rule.$messages.forEach(message => {
 						totals[message.$isReport ? 'totalReports' : 'totalAsserts']++;
 						console.log(
@@ -171,15 +161,19 @@ new Command()
 							].join('\t')
 						);
 					});
-					// console.groupEnd(ASCII_COLOR_DIM + rule.$context + ASCII_COLOR_DEFAULT);
 				});
-				console.groupEnd(pattern.$patternName || '[unnamed pattern]');
 			});
 			console.groupEnd(fileGroupName);
 		});
 
 		console.log('');
-		console.log(`Done after ${((Date.now() - TIME_SCRIPT_START)/1000).toFixed(2)} seconds, ${totals.totalAsserts} assertions failed and ${totals.totalReports} reports generated from ${totals.totalFiles} files`);
+		console.log(
+			`Done after ${((Date.now() - TIME_SCRIPT_START) / 1000).toFixed(2)} seconds, ${
+				totals.totalAsserts
+			} assertions failed and ${totals.totalReports} reports generated from ${
+				totals.totalFiles
+			} files`
+		);
 	})
 	.execute(process.argv.slice(2))
 	.catch(error => {
