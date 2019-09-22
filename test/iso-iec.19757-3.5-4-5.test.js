@@ -19,20 +19,52 @@ describe('ISO/IEC 19757-3:2016, Section 5.4.5, <let />', () => {
 			</schema>`
 		);
 
-		const firstPattern = results[0];
-		const firstRule = firstPattern[0];
-		const firstContext = firstRule[0];
-		const firstAssert = firstContext.results[0];
+		const firstAssert = results[0];
 
 		// This means that the named variable works in the assert test
 		expect(firstAssert).toBeTruthy();
 
 		// This means that the named variable works in message interpolation.
-		expect(firstAssert).toBe('bar');
+		expect(firstAssert.message).toBe('bar');
 	});
 
 	// TODO
-	xit('Otherwise, the variable is calculated with the context of the instance document root', () => {});
+	it('Otherwise, the variable is calculated with the context of the instance document root', () => {
+		const { results } = test(
+			`<xml><thunder /></xml>`,
+			`<schema xmlns="http://purl.oclc.org/dsdl/schematron">
+				<let name="schemaVariable" value="concat('schema', child::*/name())"/>
+				<phase id="test-me">
+					<let name="phaseVariable" value="concat('phase', child::*/name())"/>
+					<active pattern="pattern-me" />
+				</phase>
+				<pattern id="pattern-me">
+					<let name="patternVariable" value="concat('pattern', child::*/name())"/>
+					<rule context="//thunder">
+						<let name="ruleVariable" value="concat('rule', name())"/>
+						<report test="true()">
+							<value-of select="$schemaVariable" />
+							<value-of select="$phaseVariable" />
+							<value-of select="$patternVariable" />
+							<value-of select="$ruleVariable" />
+						</report>
+					</rule>
+				</pattern>
+			</schema>`,
+			'test-me'
+		);
+
+		const firstAssert = results[0];
+		expect(firstAssert).toBeTruthy();
+
+		// When <let /> is not a child of <rule />, use the document node as context
+		expect(firstAssert.message).toContain('schemaxml');
+		expect(firstAssert.message).toContain('phasexml');
+		expect(firstAssert.message).toContain('patternxml');
+
+		// When <let /> occurs in <rule />, use the context
+		expect(firstAssert.message).toContain('rulethunder');
+	});
 
 	// ALREADY PROVEN
 	// "The required name attribute is the name of the variable."
@@ -53,23 +85,29 @@ describe('ISO/IEC 19757-3:2016, Section 5.4.5, <let />', () => {
 			</schema>`
 		);
 
-		const firstPattern = results[0];
-		const firstRule = firstPattern[0];
-		const firstContext = firstRule[0];
-		const firstAssert = firstContext.results[0];
 
 		// In the assert test
-		expect(firstAssert).toBeTruthy();
+		expect(results[0]).toBeTruthy();
 
 		// In message interpolation
-		expect(firstAssert).toBe('bar');
+		expect(results[0].message).toBe('bar');
 	});
 
-	// TODO
-	xit(
+	it(
 		'It is an error to reference a variable that has not been defined in the current schema, phase, pattern, or ' +
 			'rule, if the query language binding allows this to be determined reliably',
-		() => {}
+		() => {
+			expect(() => test(
+				`<xml/>`,
+				`<schema xmlns="http://purl.oclc.org/dsdl/schematron">
+					<pattern>
+						<rule context="/*">
+							<report test="$foobar" />
+						</rule>
+					</pattern>
+				</schema>`
+			)).toThrow('foobar')
+		}
 	);
 
 	// TODO

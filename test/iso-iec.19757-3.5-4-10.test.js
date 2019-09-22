@@ -1,4 +1,4 @@
-const { test, getSchematronRequest, parseDom } = require('./util');
+const { test } = require('./util');
 
 // Source of XML and Schematron samples:
 // https://www.data2type.de/en/xml-xslt-xslfo/schematron/schematron-reference/
@@ -32,12 +32,9 @@ describe('ISO/IEC 19757-3:2016, Section 5.4.10, <phase />', () => {
 	it('The element specifies the phase to be used for validating documents, for example, by user command.', () => {
 		const { results } = test(`<xml />`, SCHEMATRON, 'beta');
 
-		const firstAssert = results[0][0][0].results[0];
-		const secondPattern = results[1];
-
 		// This means that the "alpha" phase was not executed
-		expect(firstAssert).toBe('Beta pattern');
-		expect(secondPattern).toBeFalsy();
+		expect(results).toHaveLength(1);
+		expect(results[0].message).toBe('Beta pattern');
 	});
 
 	// "Two names, #ALL and #DEFAULT, have special meanings."
@@ -45,23 +42,18 @@ describe('ISO/IEC 19757-3:2016, Section 5.4.10, <phase />', () => {
 	it('The name #ALL is reserved to denote that all patterns are active.', () => {
 		const { results } = test(`<xml />`, SCHEMATRON, '#ALL');
 
-		const firstAssert = results[0][0][0].results[0];
-		const secondAssert = results[1][0][0].results[0];
-
 		// This means that the "alpha" phase was not executed
-		expect(firstAssert).toBe('Alpha pattern');
-		expect(secondAssert).toBe('Beta pattern');
+		expect(results).toHaveLength(2);
+		expect(results[0].message).toBe('Alpha pattern');
+		expect(results[1].message).toBe('Beta pattern');
 	});
 
 	it('The name #DEFAULT is to denote that the name given in the defaultPhase attribute on the schema element should be used.', () => {
 		const { results } = test(`<xml />`, SCHEMATRON, '#DEFAULT');
 
-		const firstAssert = results[0][0][0].results[0];
-		const secondPattern = results[1];
-
 		// This means that the "alpha" phase was not executed
-		expect(firstAssert).toBe('Alpha pattern');
-		expect(secondPattern).toBeFalsy();
+		expect(results).toHaveLength(1);
+		expect(results[0].message).toBe('Alpha pattern');
 	});
 
 	xit('If no defaultPhase is specified, then all patterns are active.', () => {});

@@ -18,21 +18,18 @@ describe('ISO/IEC 19757-3:2016, Section 5.4.6, <name />', () => {
 		</schema>`
 	);
 
-	const firstPattern = results[0];
-	const firstRule = firstPattern[0];
-	const firstContext = firstRule[0];
-	const firstAssert = firstContext.results[0];
-	const seccondAssert = firstContext.results[1];
+	const firstAssert = results[0];
+	const secondAssert = results[1];
 
 	it('Provides the names of nodes from the instance document to allow clearer assertions...', () => {
-		expect(firstAssert).toBe('thunder');
+		expect(firstAssert.message).toBe('thunder');
 	});
 
 	// TODO
 	xit('... and diagnostics.', () => {});
 
 	it('The optional path attribute is an expression evaluated in the current context that returns a string that is the name of a node.', () => {
-		expect(seccondAssert).toBe('lightning');
+		expect(secondAssert.message).toBe('lightning');
 	});
 
 	// ALREADY PROVEN

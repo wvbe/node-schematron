@@ -1,0 +1,51 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`typescript parses 1`] = `
+Schema {
+  "defaultPhase": null,
+  "patterns": Array [
+    Pattern {
+      "id": null,
+      "rules": Array [
+        Rule {
+          "asserts": Array [
+            Assert {
+              "isReport": true,
+              "message": Array [
+                Object {
+                  "$type": "value-of",
+                  "select": "$lightning",
+                },
+              ],
+              "test": "$lightning = 'bar'",
+            },
+          ],
+          "context": "//thunder",
+          "variables": Array [
+            Variable {
+              "name": "lightning",
+              "value": "string(@foo)",
+            },
+          ],
+        },
+      ],
+      "variables": Array [],
+    },
+  ],
+  "phases": Array [],
+  "title": null,
+  "variables": Array [],
+}
+`;
+
+exports[`typescript validates 1`] = `
+Array [
+  Result {
+    "context": <thunder
+      foo="bar"
+    />,
+    "isReport": true,
+    "message": "bar",
+  },
+]
+`;

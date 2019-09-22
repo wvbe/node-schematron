@@ -1,2 +1,7 @@
-test
-docs
+*.ts
+/.babelrc.js
+/docs
+/src
+/test
+/coverage
+tsconfig.json

@@ -16,7 +16,6 @@
 		"validation",
 		"terminal"
 	],
-	"main": "index.js",
 	"directories": {
 		"lib": "./src",
 		"test": "./test"
@@ -25,12 +24,30 @@
 		"node-schematron": "./bin/schematron.js"
 	},
 	"scripts": {
-		"demo": "node ./bin/schematron.js \"test/xml/random-dita.schematron.xml\" \"test/xml/random-dita/*.dita\""
+		"prepublish": "jest && npm run ts:build",
+		"test": "jest",
+		"ts:build": "tsc",
+		"ts:run": "ts-node index.ts",
+		"demo": "node ./bin/schematron.js \"test/xml/jungle.schematron.xml\" \"test/xml/jungle.document.xml\""
 	},
 	"dependencies": {
 		"ask-nicely": "^3.0.2",
 		"fontoxpath": "^3.6.0",
 		"globby": "^6.1.0",
 		"slimdom-sax-parser": "^1.2.1"
+	},
+	"devDependencies": {
+		"@babel/core": "^7.6.0",
+		"@babel/plugin-proposal-class-properties": "^7.5.5",
+		"@babel/plugin-proposal-object-rest-spread": "^7.5.5",
+		"@babel/preset-env": "^7.6.0",
+		"@babel/preset-typescript": "^7.6.0",
+		"@types/jest": "^24.0.18",
+		"@types/node": "^12.7.5",
+		"babel-jest": "^24.9.0",
+		"jest": "^24.9.0",
+		"ts-node": "^8.4.1",
+		"tsc": "^1.20150623.0",
+		"typescript": "^3.6.3"
 	}
 }
