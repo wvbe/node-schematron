@@ -1,13 +1,10 @@
-const { test } = require('./util');
+import { Schema } from '../index';
 
-// Source of XML and Schematron samples:
-// https://www.data2type.de/en/xml-xslt-xslfo/schematron/schematron-reference/
-
-// Tests <let>
+// Tests <name>
 // See also section 5.4.6 of ISO/IEC 19757-3
+
 describe('ISO/IEC 19757-3:2016, Section 5.4.6, <name />', () => {
-	const { results } = test(
-		`<lightning><thunder /></lightning>`,
+	const results = Schema.fromString(
 		`<schema xmlns="http://purl.oclc.org/dsdl/schematron">
 			<pattern>
 				<rule context="/*/*">
@@ -16,7 +13,7 @@ describe('ISO/IEC 19757-3:2016, Section 5.4.6, <name />', () => {
 				</rule>
 			</pattern>
 		</schema>`
-	);
+	).validateString(`<lightning><thunder /></lightning>`);
 
 	const firstAssert = results[0];
 	const secondAssert = results[1];
