@@ -1,4 +1,4 @@
-import { evaluateXPathToNodes } from 'fontoxpath';
+import { evaluateXPathToNodes, evaluateXPathToBoolean } from 'fontoxpath';
 
 import Variable from './Variable';
 import Assert from './Assert';
@@ -14,15 +14,18 @@ export default class Rule {
 		this.asserts = asserts;
 	}
 
-	validateDocument(documentDom, parentVariables) {
-		return evaluateXPathToNodes(this.context, documentDom, null).reduce((results, context) => {
-			const variables = Variable.reduceVariables(context, this.variables, {
-				...parentVariables
-			});
-			return results.concat(
-				this.asserts.map(assert => assert.validateNode(context, variables))
-			);
-		}, []);
+	isMatchForNode(context, parentVariables) {
+		return evaluateXPathToBoolean(this.context, context, null, parentVariables);
+	}
+
+	validateNode(context, parentVariables) {
+		const variables = Variable.reduceVariables(context, this.variables, {
+			...parentVariables
+		});
+
+		return this.asserts
+			.map(assert => assert.validateNode(context, variables))
+			.filter(result => !!result);
 	}
 
 	static QUERY = `map {

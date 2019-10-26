@@ -1,7 +1,7 @@
 
 <schema xmlns="http://purl.oclc.org/dsdl/schematron">
 	<pattern>
-		<rule context="/*/*">
+		<rule context="parent::*">
 			<report test="weight &gt;= max(../*/weight)">
 			This is the heaviest <name /> in the <name path="parent::*" /></report>
 			<assert test="weight &lt; 500">Animals must not be overweight</assert>

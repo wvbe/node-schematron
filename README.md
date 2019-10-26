@@ -13,7 +13,7 @@ const { Schema } = require('node-schematron');
 
 const schema = Schema.fromString(`<schema xmlns="http://purl.oclc.org/dsdl/schematron">
 	<pattern>
-		<rule context="//thunder">
+		<rule context="self::thunder">
 			<let name="lightning"/>
 			<report test="$lightning/@foo = 'bar'">
 				Skeet boop <value-of select="$lightning/@foo" />

@@ -16,10 +16,17 @@ export default class Pattern {
 		const variables = Variable.reduceVariables(documentDom, this.variables, {
 			...parentVariables
 		});
-		return this.rules.reduce(
-			(results, rule) => results.concat(rule.validateDocument(documentDom, variables)),
-			[]
-		);
+
+		const validateNode = (results, node) => {
+			const rule = this.rules.find(rule => rule.isMatchForNode(node, variables));
+			if (rule) {
+				results.splice(results.length, 0, ...rule.validateNode(node, variables));
+			}
+
+			return node.childNodes.reduce(validateNode, results);
+		};
+
+		return documentDom.childNodes.reduce(validateNode, []);
 	}
 
 	static QUERY = `map {
