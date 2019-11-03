@@ -14,43 +14,39 @@ export default class Assert {
 
 	createMessageString(contextNode: Node, variables: Object, chunks: Array<string | any>): string {
 		return chunks
-			.map(
-				(chunk): string => {
-					if (typeof chunk === 'string') {
-						return chunk;
-					}
-
-					// <sch:name />
-					if (chunk.$type === 'name') {
-						return evaluateXPathToString(
-							'name(' + (chunk.path || '') + ')',
-							contextNode,
-							null,
-							variables
-						);
-					}
-
-					// <sch:value-of />
-					if (chunk.$type === 'value-of') {
-						return evaluateXPathToString(chunk.select, contextNode, null, variables);
-					}
-
-					console.log(chunk);
-					throw new Error('Unsupported element in <sch:message>');
+		.map(
+			(chunk): string => {
+				if (typeof chunk === 'string') {
+					return chunk;
 				}
-			)
-			.join('');
+
+				// <sch:name />
+				if (chunk.$type === 'name') {
+					return evaluateXPathToString(
+						'name(' + (chunk.path || '') + ')',
+						contextNode,
+						null,
+						variables
+					);
+				}
+
+				// <sch:value-of />
+				if (chunk.$type === 'value-of') {
+					return evaluateXPathToString(chunk.select, contextNode, null, variables);
+				}
+
+				console.log(chunk);
+				throw new Error('Unsupported element in <sch:message>');
+			}
+		)
+		.join('');
 	}
 
-	validateNode(context: Node, variables: Object): Result {
+	validateNode(context: Node, variables: Object): Result | null {
 		const outcome = evaluateXPathToBoolean(this.test, context, null, variables);
-		return new Result(
-			context,
-			this,
-			(!this.isReport && outcome) || (this.isReport && !outcome)
-				? null
-				: this.createMessageString(context, variables, this.message)
-		);
+		return (!this.isReport && outcome) || (this.isReport && !outcome)
+			? null
+			: new Result(context, this, this.createMessageString(context, variables, this.message));
 	}
 
 	static QUERY = `map {

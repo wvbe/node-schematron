@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const { Command, MultiOption } = require('ask-nicely');
+const { Command, MultiOption, Option } = require('ask-nicely');
 const path = require('path');
 const { sync } = require('slimdom-sax-parser');
 const fs = require('fs');
@@ -9,99 +9,130 @@ const globby = require('globby');
 const { Schema } = require('../dist/index');
 const ASCII_COLOR_RED = '\x1b[31m';
 const ASCII_COLOR_GREEN = '\x1b[32m';
+const ASCII_COLOR_BLUE = '\x1b[34m';
 const ASCII_COLOR_DEFAULT = '\x1b[0m';
-const ASCII_CHECKMARK = ASCII_COLOR_GREEN + '✓' + ASCII_COLOR_DEFAULT;
+const ASCII_CHECKMARK = ASCII_COLOR_BLUE + '△' + ASCII_COLOR_DEFAULT;
 const ASCII_CROSSMARK = ASCII_COLOR_RED + '✘' + ASCII_COLOR_DEFAULT;
-const MAX_PER_BATCH = 1000;
 
-function gatherResultsFromChildProcesses(schematronRequest, fileList) {
-	let i = 0;
-	const total = Math.ceil(fileList.length / MAX_PER_BATCH);
-	// Read all files
+function gatherResultsFromChildProcesses(schema, { files, batch, phase }, onResult) {
 	return (function readNextBatch(fileList, accum = []) {
-		const slice = fileList.length > MAX_PER_BATCH ? fileList.slice(0, MAX_PER_BATCH) : fileList;
-		const nextSlice = fileList.length > MAX_PER_BATCH ? fileList.slice(MAX_PER_BATCH) : [];
+		const slice = fileList.length > batch ? fileList.slice(0, batch) : fileList;
+		const nextSlice = fileList.length > batch ? fileList.slice(batch) : [];
 
-		return new Promise(resolve => {
-			console.error('Batch ' + ++i + '/' + total);
-			const child = child_process.fork(
-				path.resolve(__dirname, 'schematron.child_process.js')
-			);
+		return new Promise((resolve) => {
+			const child = child_process.fork(path.resolve(__dirname, 'schematron.child_process.js'));
 
-			child.on('message', message => {
+			child.on('message', (message) => {
+				if (message) {
+					return onResult(message);
+				}
+
+				// An empty message means end of transmission
+
 				child.send({
 					type: 'kill'
 				});
 
-				resolve(message);
+				resolve();
 			});
 
 			child.send({
 				type: 'analyze',
 				fileList: slice,
-				schema: schematronRequest
+				schema: schema,
+				phaseId: phase
 			});
-		}).then(doms => {
+		}).then((doms) => {
 			// Recurse, or end
-			return nextSlice.length
-				? readNextBatch(nextSlice, accum.concat(doms))
-				: accum.concat(doms);
+			return nextSlice.length ? readNextBatch(nextSlice, accum.concat(doms)) : accum.concat(doms);
 		});
-	})(fileList);
+	})(files);
 }
 
 const TIME_SCRIPT_START = Date.now();
 new Command()
 	.addParameter('schematron')
 	.addParameter('glob')
+	.addOption(new MultiOption('files').setShort('f').setDescription('The source files').isRequired(false))
 	.addOption(
-		new MultiOption('files')
-			.setShort('f')
-			.setDescription('The source files')
-			.isRequired(false)
+		new Option('batch')
+			.setShort('b')
+			.setDescription('The amount of documents per child process')
+			.setResolver((value) => parseInt(value || 5000, 10))
 	)
-	.setController(async req => {
+	.addOption('phase', 'p', 'Phase')
+	.setController(async (req) => {
 		const cwd = process.cwd();
+
 		const globbedFiles = req.parameters.glob
-			? globby.sync([req.parameters.glob], {
+			? globby.sync([ req.parameters.glob ], {
 					cwd,
 					absolute: true
-			  })
+				})
 			: [];
 
 		const schema = Schema.fromDomToJson(
 			sync(
 				await new Promise((resolve, reject) =>
-					fs.readFile(req.parameters.schematron, 'utf8', (err, data) =>
-						err ? reject(err) : resolve(data)
-					)
+					fs.readFile(req.parameters.schematron, 'utf8', (err, data) => (err ? reject(err) : resolve(data)))
 				)
 			)
 		);
 
-		(await gatherResultsFromChildProcesses(schema, [...req.options.files, ...globbedFiles]))
-			// .filter(thing => thing.$value.some(v => v.message))
-			.forEach(result => {
-				const fileGroupName = '> ' + path.relative(cwd, result.$fileName);
-				console.group(fileGroupName);
-				result.$value.forEach(assert => {
-					if (!assert.message) {
-						return;
+		const files = [ ...req.options.files, ...globbedFiles ];
+
+		let lastLoggedFileName = null;
+		const filesWithAsserts = {};
+		const stats = {
+			files: files.length,
+			filesWithoutResults: 0,
+			filesWithAssertResults: 0,
+			totalAsserts: 0,
+			totalReports: 0
+		}
+		await gatherResultsFromChildProcesses(
+			schema,
+			{
+				batch: req.options.batch,
+				phase: req.options.phase,
+				files
+			},
+			(result) => {
+				if (!result.$value.length) {
+					++stats.filesWithoutResults;
+					return;
+				}
+				if (lastLoggedFileName !== result.$fileName) {
+					lastLoggedFileName = result.$fileName;
+					console.log('> ' + path.relative(cwd, result.$fileName).replace(/\\/g, '/'));
+				}
+				result.$value.forEach((assert) => {
+					if (assert.isReport) {
+						++stats.totalReports;
+					} else {
+						filesWithAsserts[result.$fileName] = (filesWithAsserts[result.$fileName] || 0) + 1;
+						++stats.totalAsserts;
 					}
 					console.log(
-						[
-							assert.isReport ? ASCII_CHECKMARK : ASCII_CROSSMARK,
-							assert.message.trim()
-						].join('\t')
+						'  ' + [ assert.isReport ? ASCII_CHECKMARK : ASCII_CROSSMARK, assert.message.trim() ].join('  ')
 					);
 				});
-				console.groupEnd(fileGroupName);
-			});
+			}
+		);
+		stats.filesWithAssertResults = Object.keys(filesWithAsserts).length;
+		const milliseconds = (Date.now() - TIME_SCRIPT_START);
+		const msPerDocument = (milliseconds/stats.files).toFixed(2);
+		const documentPerSecond = (stats.files/milliseconds*1000).toFixed(2);
 
-		console.log(`Done after ${((Date.now() - TIME_SCRIPT_START) / 1000).toFixed(2)} seconds`);
+		console.log();
+		console.log(`Validated ${stats.files} documents in ${(milliseconds / 1000).toFixed(2)} seconds (${msPerDocument}ms/d, ${documentPerSecond}d/s)`);
+		console.log(`  Documents passed: ${stats.files - stats.filesWithAssertResults}`);
+		console.log(`  Documents failed: ${stats.filesWithAssertResults}`);
+		console.log(`  Total fails: ${stats.totalAsserts}`);
+		console.log(`  Total reports: ${stats.totalReports}`);
 	})
 	.execute(process.argv.slice(2))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error.stack);
 		process.exit(1);
 	});

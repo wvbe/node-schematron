@@ -24,11 +24,10 @@ describe('Validation routine', () => {
 			<thunder />
 			<thunder foo="bar" />
 		</xml>`);
-		expect(results).toHaveLength(4);
+		expect(results).toHaveLength(3);
 		expect(results[0].message).toBe('Report 2');
 		expect(results[1].message).toBe('Report 1a');
-		expect(results[2].message).toBeNull();
-		expect(results[3].message).toBe('Report 1b');
+		expect(results[2].message).toBe('Report 1b');
 	});
 
 	it('In order of nodes', () => {
@@ -36,9 +35,9 @@ describe('Validation routine', () => {
 			<thunder foo="bar" />
 			<thunder />
 		</xml>`);
-		expect(results).toHaveLength(4);
+		expect(results).toHaveLength(3);
 		expect(results[0].message).toBe('Report 1a');
-		expect(results[3].message).toBe('Report 2');
+		expect(results[2].message).toBe('Report 2');
 	});
 
 	it('Derp', () => {

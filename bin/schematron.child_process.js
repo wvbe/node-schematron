@@ -3,24 +3,30 @@
 const fs = require('fs');
 const { Schema } = require('../dist/index');
 
-process.on('message', (message) => {
-	switch (message.type) {
-		case 'kill':
-			process.exit();
-			return;
+async function validateFile(schema, phaseId, fileName) {
+	const content = await new Promise((resolve, reject) =>
+		fs.readFile(fileName, 'utf8', (error, data) => (error ? reject(error) : resolve(data)))
+	);
+	process.send({
+		$fileName: fileName,
+		$value: schema.validateString(content, phaseId).map((result) => result.toJson())
+	});
+}
 
-		case 'analyze':
-			const schema = Schema.fromJson(message.schema);
-			const results = message.fileList.map(fileName => ({
-				$fileName: fileName,
-				$value: schema.validateString(fs.readFileSync(fileName, 'utf8'))
-					.map(result => result.toJson())
-			}));
-			return process.send(results);
-
-		default:
-			console.log('Unknown message type', message);
-			process.exit(1);
-			return;
+process.on('message', async (message) => {
+	if (message.type === 'analyze') {
+		const schema = Schema.fromJson(message.schema);
+		await Promise.all(message.fileList.map(validateFile.bind(null, schema, message.phaseId)));
+		process.send(null);
+		return;
 	}
+
+	if (message.type === 'kill') {
+		process.exit();
+		return;
+	}
+
+	console.log('Unknown message type', message);
+	process.exit(1);
+	return;
 });
