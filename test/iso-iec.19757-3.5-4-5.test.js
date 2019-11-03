@@ -8,7 +8,7 @@ describe('ISO/IEC 19757-3:2016, Section 5.4.5, <let />', () => {
 		const results = Schema.fromString(
 			`<schema xmlns="http://purl.oclc.org/dsdl/schematron">
 				<pattern>
-					<rule context="self::thunder">
+					<rule context="thunder">
 						<let name="lightning" value="string(@foo)"/>
 						<report test="$lightning = 'bar'"><value-of select="$lightning" /></report>
 					</rule>
@@ -36,7 +36,7 @@ describe('ISO/IEC 19757-3:2016, Section 5.4.5, <let />', () => {
 				</phase>
 				<pattern id="pattern-me">
 					<let name="patternVariable" value="concat('pattern', child::*/name())"/>
-					<rule context="self::thunder">
+					<rule context="thunder">
 						<let name="ruleVariable" value="concat('rule', name())"/>
 						<report test="true()">
 							<value-of select="$schemaVariable" />
@@ -70,7 +70,7 @@ describe('ISO/IEC 19757-3:2016, Section 5.4.5, <let />', () => {
 		const results = Schema.fromString(
 			`<schema xmlns="http://purl.oclc.org/dsdl/schematron">
 				<pattern>
-					<rule context="self::thunder">
+					<rule context="thunder">
 						<let name="lightning"/>
 						<report test="$lightning/@foo = 'bar'"><value-of select="$lightning/@foo" /></report>
 					</rule>

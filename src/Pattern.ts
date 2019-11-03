@@ -1,3 +1,5 @@
+import { evaluateXPathToNodes } from 'fontoxpath';
+
 import Variable from './Variable';
 import Rule from './Rule';
 
@@ -16,17 +18,20 @@ export default class Pattern {
 		const variables = Variable.reduceVariables(documentDom, this.variables, {
 			...parentVariables
 		});
-
-		const validateNode = (results, node) => {
-			const rule = this.rules.find(rule => rule.isMatchForNode(node, variables));
+		const ruleContexts = this.rules.map(rule =>
+			evaluateXPathToNodes('//(' + rule.context + ')', documentDom)
+		);
+		const flattenValidationResults = (results, node) => {
+			const ruleIndex = ruleContexts.findIndex(context => context.includes(node));
+			const rule = ruleIndex >= 0 ? this.rules[ruleIndex] : null;
 			if (rule) {
 				results.splice(results.length, 0, ...rule.validateNode(node, variables));
 			}
 
-			return node.childNodes.reduce(validateNode, results);
+			return node.childNodes.reduce(flattenValidationResults, results);
 		};
 
-		return documentDom.childNodes.reduce(validateNode, []);
+		return documentDom.childNodes.reduce(flattenValidationResults, []);
 	}
 
 	static QUERY = `map {

@@ -14,10 +14,6 @@ export default class Rule {
 		this.asserts = asserts;
 	}
 
-	isMatchForNode(context, parentVariables) {
-		return evaluateXPathToBoolean(this.context, context, null, parentVariables);
-	}
-
 	validateNode(context, parentVariables) {
 		const variables = Variable.reduceVariables(context, this.variables, {
 			...parentVariables

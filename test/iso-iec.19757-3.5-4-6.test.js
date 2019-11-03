@@ -7,7 +7,7 @@ describe('ISO/IEC 19757-3:2016, Section 5.4.6, <name />', () => {
 	const results = Schema.fromString(
 		`<schema xmlns="http://purl.oclc.org/dsdl/schematron">
 			<pattern>
-				<rule context="self::*[parent::*]">
+				<rule context="*/*">
 					<report test="true()"><name /></report>
 					<report test="true()"><name path=".." /></report>
 				</rule>
