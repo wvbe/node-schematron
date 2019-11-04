@@ -1,6 +1,6 @@
 {
 	"name": "node-schematron",
-	"version": "0.0.3",
+	"version": "1.0.0",
 	"description": "A pure-JS Schematron implementation for Node, browsers and CLI",
 	"repository": "wvbe/node-schematron",
 	"author": {
