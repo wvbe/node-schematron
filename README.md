@@ -34,6 +34,8 @@ To use as a command in your terminal, install globally like: `npm install -g nod
 	node-schematron my-schema.sch my-document.xml
 ```
 
+Or use `npx node-schematron`.
+
 #### Bucket list
 
 -   Reduce dependencies as a lib, but have decent functionality as CLI
@@ -53,5 +55,5 @@ From section 5.4.3 "Core elements" is currently _not_ supported:
 
 -   I have no aspiration towards "A full-conformance implementation shall be able to determine for any XML
     document whether it is a correct schema." because I do not find it useful. Pull-requests, however, are welcome.
--   I'll probably not implement rich documentation elements like <p> and <emph> because it does not fit well with
+-   I'll probably not implement rich documentation elements like `<p>` and `<emph>` because it does not fit well with
     Javascript oriented use that I imagine for myself. Pull-requests are welcome.

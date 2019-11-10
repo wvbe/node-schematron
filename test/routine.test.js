@@ -3,20 +3,20 @@ import { Schema } from '../index';
 describe('Validation routine', () => {
 	const schema = Schema.fromString(
 		`<schema xmlns="http://purl.oclc.org/dsdl/schematron">
-		<pattern>
-			<rule context="thunder[@foo]">
-				<report test="true()">Report 1a</report>
-				<report test="false()">Report 1x</report>
-				<report test="true()">Report 1b</report>
-			</rule>
-			<rule context="thunder">
-				<report test="true()">Report 2</report>
-			</rule>
-			<rule context="thunder[@foo='bar']">
-				<report test="true()">Report 3</report>
-			</rule>
-		</pattern>
-	</schema>`
+			<pattern>
+				<rule context="thunder[@foo]">
+					<report test="true()">Report 1a</report>
+					<report test="false()">Report 1x</report>
+					<report test="true()">Report 1b</report>
+				</rule>
+				<rule context="thunder">
+					<report test="true()">Report 2</report>
+				</rule>
+				<rule context="thunder[@foo='bar']">
+					<report test="true()">Report 3</report>
+				</rule>
+			</pattern>
+		</schema>`
 	);
 
 	it('Includes report on all asserts from a rule', () => {

@@ -1,0 +1,30 @@
+<zoo>
+	<animal>
+		<name>Cat</name>
+		<age>12</age>
+	</animal>
+	<animal smoker="true">
+		<name>Godzilla</name>
+		<age>25</age>
+	</animal>
+	<animal>
+		<name>Parrot</name>
+		<age>101</age>
+	</animal>
+	<homo-sapien smoker="true">
+		<name>G. Thunberg</name>
+		<age>12</age>
+	</homo-sapien>
+	<homo-erectus smoker="true">
+		<name>D. Trump</name>
+		<age>99</age>
+	</homo-erectus>
+	<homo-sapien>
+		<name>Weyland404</name>
+		<age>404</age>
+	</homo-sapien>
+	<homo-sapien smoker="true">
+		<name>Wybe</name>
+		<age>101</age>
+	</homo-sapien>
+</zoo>

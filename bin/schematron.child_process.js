@@ -4,13 +4,23 @@ const fs = require('fs');
 const { Schema } = require('../dist/index');
 
 async function validateFile(schema, phaseId, fileName) {
-	const content = await new Promise((resolve, reject) =>
-		fs.readFile(fileName, 'utf8', (error, data) => (error ? reject(error) : resolve(data)))
-	);
-	process.send({
-		$fileName: fileName,
-		$value: schema.validateString(content, phaseId).map((result) => result.toJson())
-	});
+	try {
+		const content = await new Promise((resolve, reject) =>
+			fs.readFile(fileName, 'utf8', (error, data) => (error ? reject(error) : resolve(data)))
+		);
+		process.send({
+			$fileName: fileName,
+			$value: schema.validateString(content, phaseId).map((result) => result.toJson())
+		});
+	}
+	catch (error) {
+		process.send({
+			$fileName: fileName,
+			$error: {
+				message: error.message
+			}
+		});
+	}
 }
 
 process.on('message', async (message) => {

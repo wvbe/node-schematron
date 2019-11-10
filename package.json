@@ -28,12 +28,13 @@
 		"test": "jest",
 		"ts:build": "tsc",
 		"ts:run": "ts-node index.ts",
-		"demo": "node ./bin/schematron.js \"test/xml/jungle.schematron.xml\" \"test/xml/jungle.document.xml\""
+		"demo": "node ./bin/schematron.js \"test/xml/simple-schematron.xml\" \"test/xml/simple-document.xml\""
 	},
 	"dependencies": {
 		"ask-nicely": "^3.0.2",
 		"fontoxpath": "^3.6.0",
 		"globby": "^6.1.0",
+		"npmlog": "^4.1.2",
 		"slimdom-sax-parser": "^1.2.1"
 	},
 	"devDependencies": {

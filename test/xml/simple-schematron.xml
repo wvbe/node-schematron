@@ -1,0 +1,36 @@
+<schema xmlns="http://purl.oclc.org/dsdl/schematron">
+	<phase id="animal-validation">
+		<active pattern="animal-age" />
+	</phase>
+
+	<phase id="human-validation">
+		<active pattern="human-age" />
+	</phase>
+
+	<pattern id="animal-age">
+		<rule context="animal">
+			<assert test="age &lt; 100">
+				Beast "<value-of select="name" />" cannot live longer than a hundred years
+			</assert>
+		</rule>
+	</pattern>
+
+	<pattern id="human-age">
+		<rule context="homo-sapien">
+			<report test="age &gt; 18">
+				Human "<value-of select="name" />" reached pityful adulthood.
+			</report>
+			<assert test="not(@smoker and age &gt; 100)">
+				Human "<value-of select="name" />" cannot live longer than a hundred years as a smoker.
+			</assert>
+		</rule>
+		<rule context="homo-erectus">
+			<report test="age &gt; 18">
+				Congratulations to cave-man "<value-of select="name" />" for living such a long life.
+			</report>
+			<assert test="not(@smoker)">
+				Early man "<value-of select="name" />" should have been smart enough not to smoke.
+			</assert>
+		</rule>
+	</pattern>
+</schema>
