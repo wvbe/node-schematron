@@ -8,7 +8,7 @@ var Assert = /** @class */ (function () {
         this.message = message;
         this.isReport = isReport;
     }
-    Assert.prototype.createMessageString = function (contextNode, variables, chunks) {
+    Assert.prototype.createMessageString = function (contextNode, variables, namespaceResolver, chunks) {
         return chunks
             .map(function (chunk) {
             if (typeof chunk === 'string') {
@@ -16,22 +16,28 @@ var Assert = /** @class */ (function () {
             }
             // <sch:name />
             if (chunk.$type === 'name') {
-                return fontoxpath_1.evaluateXPathToString('name(' + (chunk.path || '') + ')', contextNode, null, variables);
+                return fontoxpath_1.evaluateXPathToString('name(' + (chunk.path || '') + ')', contextNode, null, variables, {
+                    namespaceResolver: namespaceResolver
+                });
             }
             // <sch:value-of />
             if (chunk.$type === 'value-of') {
-                return fontoxpath_1.evaluateXPathToString(chunk.select, contextNode, null, variables);
+                return fontoxpath_1.evaluateXPathToString(chunk.select, contextNode, null, variables, {
+                    namespaceResolver: namespaceResolver
+                });
             }
             console.log(chunk);
             throw new Error('Unsupported element in <sch:message>');
         })
             .join('');
     };
-    Assert.prototype.validateNode = function (context, variables) {
-        var outcome = fontoxpath_1.evaluateXPathToBoolean(this.test, context, null, variables);
+    Assert.prototype.validateNode = function (context, variables, namespaceResolver) {
+        var outcome = fontoxpath_1.evaluateXPathToBoolean(this.test, context, null, variables, {
+            namespaceResolver: namespaceResolver
+        });
         return (!this.isReport && outcome) || (this.isReport && !outcome)
             ? null
-            : new Result_1.default(context, this, this.createMessageString(context, variables, this.message));
+            : new Result_1.default(context, this, this.createMessageString(context, variables, namespaceResolver, this.message));
     };
     Assert.fromJson = function (json) {
         return new Assert(json.test, json.message, json.isReport);

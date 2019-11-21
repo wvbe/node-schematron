@@ -1,5 +1,3 @@
-import { evaluateXPathToNodes, evaluateXPathToBoolean } from 'fontoxpath';
-
 import Variable from './Variable';
 import Assert from './Assert';
 
@@ -14,13 +12,13 @@ export default class Rule {
 		this.asserts = asserts;
 	}
 
-	validateNode(context, parentVariables) {
-		const variables = Variable.reduceVariables(context, this.variables, {
+	validateNode(context, parentVariables, namespaceResolver) {
+		const variables = Variable.reduceVariables(context, this.variables, namespaceResolver, {
 			...parentVariables
 		});
 
 		return this.asserts
-			.map(assert => assert.validateNode(context, variables))
+			.map(assert => assert.validateNode(context, variables, namespaceResolver))
 			.filter(result => !!result);
 	}
 

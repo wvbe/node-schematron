@@ -4,7 +4,7 @@ This is an Schematron minimal syntax implementation for front- and back-end Java
 a NodeJS dependency as well as in the browser (ie. wrapped by Webpack). It returns a JSON object with the (resolved)
 messages of your assertions.
 
-#### To use
+#### To use programmatically
 
 To use programmatically, install to your project like any other npm module: `npm install node-schematron`
 
@@ -27,33 +27,94 @@ const results = schema.validateString(`<xml foo="err">
 </xml>`);
 ```
 
-To use as a command in your terminal, install globally like: `npm install -g node-schematron`
+#### To use from command line
 
-```
+To use as a command in your terminal, install globally like: `npm install -g node-schematron`. Alternatively, you can
+use `npx` to run it.
+
+The `node-schematron` command has two parameters, the last one of which is optional:
+
+1. `schematronLocation`, required, an absolute path or relative reference to your schematron XML. For example `my-schema.sch`.
+2. `globPattern`, optional, a globbing pattern for documents. For example `*.{xml,dita}` (all .xml and .dita files). Defaults to `*.xml` (all .xml files).
+
+```sh
 /Users/Wybe/Docs/schematron-test:
-	node-schematron my-schema.sch my-document.xml
+  node-schematron my-schema.sch
+  # Gives the results for all "*.xml" files in this directory
 ```
 
-Or use `npx node-schematron`.
+```sh
+/Users/Wybe/Docs/schematron-test:
+  node-schematron my-schema "docs/**/*.xml"
+  # Gives the results for all "*.xml" files in the docs/ directory and all subdirectories
+```
 
-#### Bucket list
+| Long name     | Short | Description |
+|---------------|-------|-------------|
+| `--reporters` | `-r`  | The reporter(s) to use. Zero or many of `npm` or `xunit`, space separated. |
+| `--ok`        | `-o`  | Do not exit process with an error code if at least one document fails a schematron assertion. |
+| `--files`     | `-f`  | A list of files, in case you can't use the globbing parameter. |
+| `--batch`     | `-b`  | The number of documents to handle before opening the next child process. Defaults to `5000`. |
+| `--phase`     | `-p`  | The schematron phase to run. Defaults to `#DEFAULT` (which means the `@defaultPhase` value or `#ALL`. |
+| `--log-level` | `-l`  | The amount of stuff to log. Only used if `-r` includes `npm`. Value must be one of `silly`, `info`, `report`, `pass`, `assert`, `fail`, `fileError` or `error`. Defaults to `info`. |
 
--   Reduce dependencies as a lib, but have decent functionality as CLI
--   Use more of the words in the ISO/IEC 19757-3 spec
--   Unit test on aspects of that spec
+```sh
+/Users/Wybe/Docs/schematron-test:
+  node-schematron my-schema.sch "**/*.xml" --phase publication --log-level fail
+  # Validates the "publication" phase and logs only the paths of documents that fail
+```
 
-#### Conformance
+```sh
+/Users/Wybe/Docs/schematron-test:
+  node-schematron my-schema.sch "**/*.xml" -r xunit > test-reports/test-report.xml
+  # Validates the "publication" phase and writes an XUnit XML report to file
+```
 
-I'm working through the [ISO/IEC 19757-3:2016](./docs/c055982_ISO_IEC_19757-3_2016.pdf) document in an attempt to implement Schematron faithfully. The unit tests are the authority of which parts of the spec are guaranteed to work.
+#### Compliance
 
-From section 5.4.3 "Core elements" is currently _not_ supported:
+As for features, check out the unit tests in `test/`. I've mirrored them to the text of [ISO/IEC 19757-3 2016](./docs/c055982_ISO_IEC_19757-3_2016.pdf) in order to clearly assert how far `node-schematron` is up to spec.
+I've also noticed there's different ways you can read that text, so please file an issue if you feel `node-schematron`
+behaves in a non-standard or buggy way.
 
--   Elements `<extends>`, `<include>` and `<param>`
--   Attributes `@abstract`, `@diagnostics`, `@icon`, `@see`, `@fpi`, `@flag`, `@role` and `@subject`
+| Section | Thing          | Status   |
+|---------|----------------|----------|
+| 5.4.1   | `<active />`   | Tests OK |
+| 5.4.1   | `<active />`   | Tests OK |
+| 5.4.2   | `<assert />`   | Tests OK |
+| 5.4.3   | `<extends />`  | Not on roadmap |
+| 5.4.4   | `<include />`  | Not on roadmap |
+| 5.4.5   | `<let />`      | Tests OK |
+| 5.4.6   | `<name />`     | Tests OK |
+| 5.4.7   | `<ns />`       | Experimental |
+| 5.4.8   | `<param />`    | Tests OK |
+| 5.4.9   | `<pattern />`  | Tests OK |
+| 5.4.10  | `<phase />`    | Tests OK |
+| 5.4.11  | `<report />`   | Tests OK |
+| 5.4.12  | `<rule />`     | Tests OK |
+| 5.4.13  | `<schema />`   | Tests OK |
+| 5.4.14  | `<value-of />` | Tests OK |
 
-#### Non-conformance
+Not supported attributes are `@abstract`, `@diagnostics`, `@icon`, `@see`, `@fpi`, `@flag`, `@role` and `@subject`.
 
--   I have no aspiration towards "A full-conformance implementation shall be able to determine for any XML
-    document whether it is a correct schema." because I do not find it useful. Pull-requests, however, are welcome.
--   I'll probably not implement rich documentation elements like `<p>` and `<emph>` because it does not fit well with
-    Javascript oriented use that I imagine for myself. Pull-requests are welcome.
+#### Support
+
+-   Every pull request will be considered and responded to.
+-   The schematron query language is XPath 3.1, implemented by [fontoxpath](https://www.npmjs.com/package/fontoxpath). It
+    is [not yet feature complete](https://documentation.fontoxml.com/editor/latest/xpath-25591894.html).
+
+#### License
+
+Copyright (c) 2019 Wybe Minnebo
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+Software.
+
+__THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.__

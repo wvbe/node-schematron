@@ -4,6 +4,7 @@ import { sync } from 'slimdom-sax-parser';
 import Variable from './Variable';
 import Phase from './Phase';
 import Pattern from './Pattern';
+import Ns from './Ns';
 import Result from './Result';
 
 export default class Schema {
@@ -12,19 +13,22 @@ export default class Schema {
 	public variables: Variable[];
 	public phases: Phase[];
 	public patterns: Pattern[];
+	public nss: Ns[];
 
 	constructor(
 		title: string,
 		defaultPhase: string | null,
 		variables: Variable[],
 		phases: Phase[],
-		patterns: Pattern[]
+		patterns: Pattern[],
+		nss: Ns[]
 	) {
 		this.title = title;
 		this.defaultPhase = defaultPhase;
 		this.variables = variables;
 		this.phases = phases;
 		this.patterns = patterns;
+		this.nss = nss;
 	}
 
 	validateString(documentXmlString: string, phaseId?: string): Result[] {
@@ -39,20 +43,69 @@ export default class Schema {
 			phaseId = this.defaultPhase || '#ALL';
 		}
 
-		const variables = Variable.reduceVariables(documentDom, this.variables, {});
+		const namespaceResolver = this.getNamespaceUriForPrefix.bind(this);
+		const variables = Variable.reduceVariables(documentDom, this.variables, namespaceResolver, {});
 
 		if (phaseId === '#ALL') {
-			return this.patterns
-				.reduce((results, pattern) => results.concat(pattern.validateDocument(documentDom, variables)), []);
+			return this.patterns.reduce(
+				(results, pattern) =>
+					results.concat(pattern.validateDocument(documentDom, variables, namespaceResolver)),
+				[]
+			);
 		}
 
 		const phase = this.phases.find((phase) => phase.id === phaseId);
-		const phaseVariables = Variable.reduceVariables(documentDom, phase.variables, { ...variables });
+		const phaseVariables = Variable.reduceVariables(documentDom, phase.variables, namespaceResolver, {
+			...variables
+		});
 
 		return phase.active
 			.map((patternId) => this.patterns.find((pattern) => pattern.id === patternId))
-			.reduce((results, pattern) => results.concat(pattern.validateDocument(documentDom, phaseVariables)), []);
+			.reduce(
+				(results, pattern) =>
+					results.concat(pattern.validateDocument(documentDom, phaseVariables, namespaceResolver)),
+				[]
+			);
 	}
+
+	// TODO more optimally store the namespace prefix/uri mapping. Right now its modeled as an array because there
+	// is a list of <ns> elements that are not really guaranteed to use unique prefixes.
+	getNamespaceUriForPrefix(prefix = null) {
+		if (!prefix) {
+			return null;
+		}
+		const ns = this.nss.find((ns) => ns.prefix === prefix);
+		if (!ns) {
+			throw new Error(`Namespace prefix "${prefix}" could not be resolved to an URI using <sch:ns>`);
+		}
+
+		return ns.uri;
+	}
+
+	static QUERY = `
+		declare namespace sch = 'http://purl.oclc.org/dsdl/schematron';
+
+		declare function local:json($node as node()) {
+			if ($node[self::text()])
+				then $node/string()
+			else
+			map:merge((
+				map:entry('$type', $node/name()),
+				for $attr in $node/@*
+					return map:entry($attr/name(), $attr/string())
+			))
+		};
+
+		let $context := /*[1]
+		return map {
+			'title': $context/@title/string(),
+			'defaultPhase': $context/@defaultPhase/string(),
+			'phases': array { $context/sch:phase/${Phase.QUERY}},
+			'patterns': array { $context/sch:pattern/${Pattern.QUERY}},
+			'variables': array { $context/sch:let/${Variable.QUERY}},
+			'nss': array { $context/sch:ns/${Ns.QUERY}}
+		}
+	`;
 
 	static fromJson(json): Schema {
 		return new Schema(
@@ -60,48 +113,22 @@ export default class Schema {
 			json.defaultPhase,
 			json.variables.map((obj) => Variable.fromJson(obj)),
 			json.phases.map((obj) => Phase.fromJson(obj)),
-			json.patterns.map((obj) => Pattern.fromJson(obj))
+			json.patterns.map((obj) => Pattern.fromJson(obj)),
+			json.nss.map((obj) => Ns.fromJson(obj))
 		);
 	}
 
-	static fromString(schematronXmlString: string): Schema {
-		return Schema.fromDom(sync(schematronXmlString));
+	static fromDomToJson(schematronDom: Document): Object {
+		return evaluateXPath(Schema.QUERY, schematronDom, null, {}, null, {
+			language: evaluateXPath.XQUERY_3_1_LANGUAGE
+		});
 	}
 
 	static fromDom(schematronDom: Document): Schema {
 		return Schema.fromJson(Schema.fromDomToJson(schematronDom));
 	}
 
-	static fromDomToJson(schematronDom: Document): Object {
-		return evaluateXPath(
-			`
-				declare namespace sch = 'http://purl.oclc.org/dsdl/schematron';
-
-				declare function local:json($node as node()) {
-					if ($node[self::text()])
-						then $node/string()
-					else
-					map:merge((
-						map:entry('$type', $node/name()),
-						for $attr in $node/@*
-							return map:entry($attr/name(), $attr/string())
-					))
-				};
-
-				let $context := /*[1]
-				return map {
-					'title': $context/@title/string(),
-					'defaultPhase': $context/@defaultPhase/string(),
-					'phases': array { $context/sch:phase/${Phase.QUERY}},
-					'patterns': array { $context/sch:pattern/${Pattern.QUERY}},
-					'variables': array { $context/sch:let/${Variable.QUERY}}
-				}
-			`,
-			schematronDom,
-			null,
-			{},
-			null,
-			{ language: evaluateXPath.XQUERY_3_1_LANGUAGE }
-		);
+	static fromString(schematronXmlString: string): Schema {
+		return Schema.fromDom(sync(schematronXmlString));
 	}
 }

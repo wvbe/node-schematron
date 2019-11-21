@@ -6,12 +6,14 @@ var Variable = /** @class */ (function () {
         this.name = name;
         this.value = value;
     }
-    Variable.reduceVariables = function (context, variables, initial) {
+    Variable.reduceVariables = function (context, variables, namespaceResolver, initial) {
         return variables.reduce(function (mapping, variable) {
             var _a;
             return Object.assign(mapping, (_a = {},
                 _a[variable.name] = variable.value
-                    ? fontoxpath_1.evaluateXPath(variable.value, context, null, mapping)
+                    ? fontoxpath_1.evaluateXPath(variable.value, context, null, mapping, null, {
+                        namespaceResolver: namespaceResolver
+                    })
                     : context,
                 _a));
         }, initial || {});

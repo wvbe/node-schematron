@@ -21,23 +21,34 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var fontoxpath_1 = require("fontoxpath");
 var Variable_1 = require("./Variable");
 var Rule_1 = require("./Rule");
+function namespaceResolver(input) {
+    var rest = [];
+    for (var _i = 1; _i < arguments.length; _i++) {
+        rest[_i - 1] = arguments[_i];
+    }
+    console.log.apply(console, __spreadArrays(['Pattern namespaceResolver', input], rest));
+    return input;
+}
 var Pattern = /** @class */ (function () {
     function Pattern(id, rules, variables) {
         this.id = id;
         this.rules = rules;
         this.variables = variables;
     }
-    Pattern.prototype.validateDocument = function (documentDom, parentVariables) {
+    Pattern.prototype.validateDocument = function (documentDom, parentVariables, namespaceResolver) {
         var _this = this;
-        var variables = Variable_1.default.reduceVariables(documentDom, this.variables, __assign({}, parentVariables));
+        var variables = Variable_1.default.reduceVariables(documentDom, this.variables, namespaceResolver, __assign({}, parentVariables));
         var ruleContexts = this.rules.map(function (rule) {
-            return fontoxpath_1.evaluateXPathToNodes('//(' + rule.context + ')', documentDom);
+            return fontoxpath_1.evaluateXPathToNodes('//(' + rule.context + ')', documentDom, null, variables, {
+                namespaceResolver: namespaceResolver
+            });
         });
         var flattenValidationResults = function (results, node) {
             var ruleIndex = ruleContexts.findIndex(function (context) { return context.includes(node); });
             var rule = ruleIndex >= 0 ? _this.rules[ruleIndex] : null;
             if (rule) {
-                results.splice.apply(results, __spreadArrays([results.length, 0], rule.validateNode(node, variables)));
+                results.splice.apply(results, __spreadArrays([results.length,
+                    0], rule.validateNode(node, variables, namespaceResolver)));
             }
             return node.childNodes.reduce(flattenValidationResults, results);
         };

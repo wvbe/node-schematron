@@ -12,7 +12,12 @@ export default class Assert {
 		this.isReport = isReport;
 	}
 
-	createMessageString(contextNode: Node, variables: Object, chunks: Array<string | any>): string {
+	createMessageString(
+		contextNode: Node,
+		variables: Object,
+		namespaceResolver: (prefix: string) => string,
+		chunks: Array<string | any>
+	): string {
 		return chunks
 			.map((chunk): string => {
 				if (typeof chunk === 'string') {
@@ -21,12 +26,22 @@ export default class Assert {
 
 				// <sch:name />
 				if (chunk.$type === 'name') {
-					return evaluateXPathToString('name(' + (chunk.path || '') + ')', contextNode, null, variables);
+					return evaluateXPathToString(
+						'name(' + (chunk.path || '') + ')',
+						contextNode,
+						null,
+						variables,
+						{
+							namespaceResolver
+						}
+					);
 				}
 
 				// <sch:value-of />
 				if (chunk.$type === 'value-of') {
-					return evaluateXPathToString(chunk.select, contextNode, null, variables);
+					return evaluateXPathToString(chunk.select, contextNode, null, variables, {
+						namespaceResolver
+					});
 				}
 
 				console.log(chunk);
@@ -35,11 +50,21 @@ export default class Assert {
 			.join('');
 	}
 
-	validateNode(context: Node, variables: Object): Result | null {
-		const outcome = evaluateXPathToBoolean(this.test, context, null, variables);
+	validateNode(
+		context: Node,
+		variables: Object,
+		namespaceResolver: (prefix: string) => string
+	): Result | null {
+		const outcome = evaluateXPathToBoolean(this.test, context, null, variables, {
+			namespaceResolver
+		});
 		return (!this.isReport && outcome) || (this.isReport && !outcome)
 			? null
-			: new Result(context, this, this.createMessageString(context, variables, this.message));
+			: new Result(
+					context,
+					this,
+					this.createMessageString(context, variables, namespaceResolver, this.message)
+			  );
 	}
 
 	static QUERY = `map {

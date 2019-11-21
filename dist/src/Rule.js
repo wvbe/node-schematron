@@ -19,10 +19,10 @@ var Rule = /** @class */ (function () {
         this.variables = variables;
         this.asserts = asserts;
     }
-    Rule.prototype.validateNode = function (context, parentVariables) {
-        var variables = Variable_1.default.reduceVariables(context, this.variables, __assign({}, parentVariables));
+    Rule.prototype.validateNode = function (context, parentVariables, namespaceResolver) {
+        var variables = Variable_1.default.reduceVariables(context, this.variables, namespaceResolver, __assign({}, parentVariables));
         return this.asserts
-            .map(function (assert) { return assert.validateNode(context, variables); })
+            .map(function (assert) { return assert.validateNode(context, variables, namespaceResolver); })
             .filter(function (result) { return !!result; });
     };
     Rule.fromJson = function (json) {
