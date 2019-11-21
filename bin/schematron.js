@@ -9,7 +9,7 @@ const { Command, MultiOption, Option, Parameter } = require('ask-nicely');
 const globby = require('globby');
 const npmlog = require('npmlog');
 const { sync } = require('slimdom-sax-parser');
-const bindXunitReporterToEvents = require('./reporters/xunit');
+const bindXunitReporterToEvents = require('./reporters/xunit.slimdom');
 const bindNpmlogReporterToEvents = require('./reporters/npmlog');
 const { Schema } = require('../dist/index');
 

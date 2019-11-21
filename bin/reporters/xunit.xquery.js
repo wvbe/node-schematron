@@ -1,43 +1,62 @@
-const { sync, slimdom } = require('slimdom-sax-parser');
-const { evaluateXPathToFirstNode } = require('fontoxpath');
+const { slimdom } = require('slimdom-sax-parser');
+const { evaluateXPath } = require('fontoxpath');
+
+// JUnit XSD: https://github.com/michaelleeallen/mocha-junit-reporter/blob/master/test/resources/JUnit.xsd
+// See also: https://help.catchsoftware.com/display/ET/JUnit+Format
+
+const CREATE_NODE_QUERY = `
+	declare function local:generateTestSuite ($index, $file) {
+		<testsuite
+			id="{$index - 1}"
+			errors="{$file('$errors')}"
+			tests="{$file('$tests')}"
+			failures="{$file('$failures')}"
+		>
+		{
+			for $report in array:flatten($file('$value'))
+				return <testcase
+					classname="{$file('$fileNameBase')}"
+					name="{fn:normalize-space($report('message'))}"
+				>
+				{ if ($report('isReport')) then () else <failure type="assert" /> }
+				</testcase>
+		}
+		</testsuite>
+	};
+
+	<testsuites suites="{$fileCount}">
+		{
+			for $index in 1 to $fileCount cast as xs:int
+				return local:generateTestSuite($index, $files($index))
+		}
+	</testsuites>
+`;
 
 module.exports = function bindXunitReporterToEvents(req, events, stream) {
-	if (!stream) {
-		// Somebody obviously wants us to shut up
-		return;
-	}
+	const files = [];
 
-	const document = sync(`<testsuites></testsuites>`);
-	const testSuitesNode = evaluateXPathToFirstNode('//testsuites', document);
+	events.on('file', (file) => {
+		file.$tests = file.$failures = file.$skipped = file.$errors = 0;
+		file.$error && ++file.$errors;
+		file.$value.forEach((report) => ++file.$tests && (report.isReport ? ++file.$skipped : ++file.$failures));
 
-	events.on('file', (file, fileIndex) => {
-		if (file.$error) {
-			return;
-		}
-		const testSuiteElement = document.createElement('testsuite');
-
-		file.$value.forEach((report) => {
-			const testCaseElement = document.createElement('testcase');
-			testCaseElement.setAttribute('classname', 'test');
-			testCaseElement.setAttribute('name', 'test');
-			const errorElement = document.createElement('error');
-			errorElement.setAttribute('message', report.message.replace(/\s\s+/g, '').trim());
-			errorElement.setAttribute('type', '?');
-			testCaseElement.appendChild(errorElement);
-			testSuiteElement.appendChild(testCaseElement);
-		});
-
-		testSuiteElement.setAttribute('errors', file.$value.length);
-		testSuiteElement.setAttribute('id', fileIndex);
-		testSuiteElement.setAttribute('name', file.$fileNameBase);
-		testSuiteElement.setAttribute('timestamp', new Date().toISOString());
-
-		testSuitesNode.appendChild(testSuiteElement);
+		files.push(file);
 	});
 
-	events.on('end', () => stream.write(slimdom.serializeToWellFormedString(document)));
-};
+	events.on('end', () => {
+		const variables = {
+			files,
+			fileCount: files.length
+		};
+		const options = {
+			language: evaluateXPath.XQUERY_3_1_LANGUAGE,
+			debug: true
+		};
+		const document = evaluateXPath(CREATE_NODE_QUERY, new slimdom.Document(), null, variables, null, options);
 
+		stream.write(slimdom.serializeToWellFormedString(document));
+	});
+};
 
 /*
 
