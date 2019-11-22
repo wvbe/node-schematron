@@ -1,4 +1,4 @@
-export default class Ns {
+export default class Namespace {
 	prefix: string;
 	uri: string;
 
@@ -12,7 +12,7 @@ export default class Ns {
 		"uri": @uri/string()
 	}`;
 
-	static fromJson(json): Ns {
-		return new Ns(json.prefix, json.uri);
+	static fromJson(json): Namespace {
+		return new Namespace(json.prefix, json.uri);
 	}
 }

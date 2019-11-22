@@ -3,9 +3,13 @@ const npmlog = require('npmlog');
 const ASCII_COLOR_RED = '\x1b[31m';
 const ASCII_COLOR_BLUE = '\u001b[34;1m';
 const ASCII_COLOR_DEFAULT = '\x1b[0m';
-const ASCII_CHECKMARK = ' ' + ASCII_COLOR_BLUE + '▲' + ASCII_COLOR_DEFAULT + ' ';
+const ASCII_CHECKMARK = '▲';
 const ASCII_WARNING = ' ' + ASCII_COLOR_RED + '▼' + ASCII_COLOR_DEFAULT + ' ';
-const ASCII_CROSSMARK = ' ' + ASCII_COLOR_RED + '✘' + ASCII_COLOR_DEFAULT + ' ';
+const ASCII_CROSSMARK = '✘';
+
+function formatPrefix(char, color, text) {
+	return [ ' ', color, char, text ? '  ' + text : '', ASCII_COLOR_DEFAULT, ' ' ].join('');
+}
 
 // Configure the npmlog object
 npmlog.prefixStyle = {};
@@ -64,48 +68,47 @@ module.exports = function bindXunitReporterToEvents(req, events, stream) {
 		timeStartAnalysis = Date.now();
 	});
 
-	events.on('file', (result, i) => {
+	events.on('file', (file, i) => {
 		npmlogItem.name = i + 1 + ' of ' + stats.files;
 		npmlogItem.completeWork(1);
 
 		// It's possible the file could not be read, parsed or other
-		if (result.$error) {
-			npmlog.fail(null, result.$fileNameBase);
-			npmlog.fileError(ASCII_WARNING, result.$error.message);
+		if (file.$error) {
+			npmlog.fail(null, file.$fileNameBase);
+			npmlog.fileError(formatPrefix(ASCII_WARNING, ASCII_COLOR_RED), file.$error.message);
 			++stats.filesWithErrors;
 			return;
 		}
 
 		// Without validation results this file passed
-		if (!result.$value.length) {
-			npmlog.pass(null, result.$fileNameBase);
+		if (!file.$value.length) {
+			npmlog.pass(null, file.$fileNameBase);
 			++stats.filesWithoutResults;
 			return;
 		}
 
 		// Create a file name caption for validation results in this document
-		if (lastLoggedFileName !== result.$fileName) {
-			lastLoggedFileName = result.$fileName;
-			result.$value.some((v) => !v.isReport)
+		if (lastLoggedFileName !== file.$fileName) {
+			lastLoggedFileName = file.$fileName;
+			file.$value.some((v) => !v.isReport)
 				? // If there is at least one <assert> that failed, the document fails
-					npmlog.fail(null, result.$fileNameBase)
+					npmlog.fail(null, file.$fileNameBase)
 				: // Or it's happy days, there's only <report> results
-					npmlog.pass(null, result.$fileNameBase);
+					npmlog.pass(null, file.$fileNameBase);
 		}
 
-		result.$value.forEach((assert) => {
+		file.$value.forEach((result) => {
 			// Not necessary to emit since `result` was already emitted:
 			// events.emit('assert', assert);
-			if (assert.isReport) {
+			if (result.isReport) {
 				++stats.totalReports;
 			} else {
 				filesWithAsserts[result.$fileName] = (filesWithAsserts[result.$fileName] || 0) + 1;
 				++stats.totalAsserts;
 			}
-
-			assert.isReport
-				? npmlog.report(ASCII_CHECKMARK, assert.message.trim())
-				: npmlog.assert(ASCII_CROSSMARK, assert.message.trim());
+			result.isReport
+				? npmlog.report(formatPrefix(ASCII_CHECKMARK, ASCII_COLOR_BLUE, result.assertId), result.message.trim())
+				: npmlog.assert(formatPrefix(ASCII_CROSSMARK, ASCII_COLOR_RED, result.assertId), result.message.trim());
 		});
 	});
 
@@ -121,14 +124,18 @@ module.exports = function bindXunitReporterToEvents(req, events, stream) {
 		npmlog.verbose(null, '%s milliseconds total', stats.totalTime);
 		npmlog.verbose(null, '%s milliseconds per document', msPerDocument);
 		npmlog.verbose(null, '%s documents per second', documentPerSecond);
-		npmlog[stats.filesWithErrors ? 'error' : 'info'](null, '%s documents could not be validated', stats.filesWithErrors);
+		npmlog[stats.filesWithErrors ? 'error' : 'info'](
+			null,
+			'%s documents could not be validated',
+			stats.filesWithErrors
+		);
 		npmlog.info(null, '%s documents passed', stats.files - stats.filesWithAssertResults);
 		npmlog.info(null, '%s documents failed', stats.filesWithAssertResults);
 		npmlog.verbose(null, '%s total fails', stats.totalAsserts);
 		npmlog.verbose(null, '%s total reports', stats.totalReports);
 
 		if (exitCode > 0) {
-			npmlog.error('Not all documents passed, exiting with non-zero code')
+			npmlog.error('Not all documents passed, exiting with non-zero code');
 		}
 	});
 };

@@ -2,11 +2,13 @@ import { evaluateXPathToString, evaluateXPathToBoolean, Node } from 'fontoxpath'
 import Result from './Result';
 
 export default class Assert {
+	id: string | null;
 	test: string;
 	message: Array<string | Object>;
 	isReport: boolean;
 
-	constructor(test, message, isReport) {
+	constructor(id: string | null, test: string, message, isReport) {
+		this.id = id;
 		this.test = test;
 		this.message = message;
 		this.isReport = isReport;
@@ -68,12 +70,13 @@ export default class Assert {
 	}
 
 	static QUERY = `map {
+		'id': if (@id) then string(@id) else (),
 		'test': @test/string(),
 		'message': array { (./text()|./element())/local:json(.) },
 		'isReport': boolean(local-name() = 'report')
 	}`;
 
 	static fromJson(json): Assert {
-		return new Assert(json.test, json.message, json.isReport);
+		return new Assert(json.id, json.test, json.message, json.isReport);
 	}
 }

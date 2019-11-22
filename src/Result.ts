@@ -9,6 +9,7 @@ export default class Result {
 	// pattern: Pattern;
 	// phase?: Phase;
 	// rule: Rule;
+	assertId: string | null;
 	isReport: boolean;
 	context: slimdom.Node;
 	message?: string;
@@ -24,6 +25,7 @@ export default class Result {
 		// this.pattern = pattern;
 		// this.phase = phase;
 		// this.rule = rule;
+		this.assertId = assert.id;
 		this.isReport = assert.isReport;
 		this.context = context;
 		this.message = message;
@@ -31,6 +33,7 @@ export default class Result {
 
 	toJson () {
 		return {
+			assertId: this.assertId,
 			isReport: this.isReport,
 			context: this.context.outerHTML,
 			message: this.message

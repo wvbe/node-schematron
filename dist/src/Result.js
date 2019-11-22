@@ -12,12 +12,14 @@ var Result = /** @class */ (function () {
         // this.pattern = pattern;
         // this.phase = phase;
         // this.rule = rule;
+        this.assertId = assert.id;
         this.isReport = assert.isReport;
         this.context = context;
         this.message = message;
     }
     Result.prototype.toJson = function () {
         return {
+            assertId: this.assertId,
             isReport: this.isReport,
             context: this.context.outerHTML,
             message: this.message

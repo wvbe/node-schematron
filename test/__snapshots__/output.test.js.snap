@@ -1,0 +1,123 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Output Schema.fromString(SCHEMATRON_EXAMPLE) 1`] = `
+Schema {
+  "defaultPhase": null,
+  "namespaces": Array [
+    Namespace {
+      "prefix": "drp",
+      "uri": "http://derp",
+    },
+  ],
+  "patterns": Array [
+    Pattern {
+      "id": null,
+      "rules": Array [
+        Rule {
+          "asserts": Array [
+            Assert {
+              "id": null,
+              "isReport": true,
+              "message": Array [
+                "A report that always fires ",
+                Object {
+                  "$type": "name",
+                },
+                " for any foo",
+              ],
+              "test": "true()",
+            },
+            Assert {
+              "id": "fires-never",
+              "isReport": true,
+              "message": Array [
+                "A report that never fires ",
+                Object {
+                  "$type": "name",
+                },
+                " for any foo",
+              ],
+              "test": "false()",
+            },
+            Assert {
+              "id": "foobar-1st-child",
+              "isReport": false,
+              "message": Array [
+                "An assert that fails once out of three times",
+              ],
+              "test": "not(@foo = 'bar' and not(preceding-sibling::*))",
+            },
+          ],
+          "context": "drp:thunder[@foo]",
+          "variables": Array [],
+        },
+        Rule {
+          "asserts": Array [
+            Assert {
+              "id": "fires-always",
+              "isReport": false,
+              "message": Array [
+                "An assert that applies to only one element and always fails",
+              ],
+              "test": "@foo = 'bar'",
+            },
+          ],
+          "context": "drp:thunder",
+          "variables": Array [],
+        },
+      ],
+      "variables": Array [],
+    },
+  ],
+  "phases": Array [],
+  "title": null,
+  "variables": Array [],
+}
+`;
+
+exports[`Output schema.validateString(DOCUMENT_EXAMPLE) 1`] = `
+Array [
+  Result {
+    "assertId": "fires-always",
+    "context": <thunder />,
+    "isReport": false,
+    "message": "An assert that applies to only one element and always fails",
+  },
+  Result {
+    "assertId": null,
+    "context": <thunder
+      foo="unbar"
+    >
+      <thunder
+        foo="bar"
+      />
+    </thunder>,
+    "isReport": true,
+    "message": "A report that always fires thunder for any foo",
+  },
+  Result {
+    "assertId": null,
+    "context": <thunder
+      foo="bar"
+    />,
+    "isReport": true,
+    "message": "A report that always fires thunder for any foo",
+  },
+  Result {
+    "assertId": "foobar-1st-child",
+    "context": <thunder
+      foo="bar"
+    />,
+    "isReport": false,
+    "message": "An assert that fails once out of three times",
+  },
+  Result {
+    "assertId": null,
+    "context": <thunder
+      foo="bar"
+    />,
+    "isReport": true,
+    "message": "A report that always fires thunder for any foo",
+  },
+]
+`;

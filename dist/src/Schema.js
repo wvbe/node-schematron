@@ -16,15 +16,15 @@ var slimdom_sax_parser_1 = require("slimdom-sax-parser");
 var Variable_1 = require("./Variable");
 var Phase_1 = require("./Phase");
 var Pattern_1 = require("./Pattern");
-var Ns_1 = require("./Ns");
+var Namespace_1 = require("./Namespace");
 var Schema = /** @class */ (function () {
-    function Schema(title, defaultPhase, variables, phases, patterns, nss) {
+    function Schema(title, defaultPhase, variables, phases, patterns, namespaces) {
         this.title = title;
         this.defaultPhase = defaultPhase;
         this.variables = variables;
         this.phases = phases;
         this.patterns = patterns;
-        this.nss = nss;
+        this.namespaces = namespaces;
     }
     Schema.prototype.validateString = function (documentXmlString, phaseId) {
         return this.validateDocument(slimdom_sax_parser_1.sync(documentXmlString), phaseId);
@@ -59,14 +59,14 @@ var Schema = /** @class */ (function () {
         if (!prefix) {
             return null;
         }
-        var ns = this.nss.find(function (ns) { return ns.prefix === prefix; });
+        var ns = this.namespaces.find(function (ns) { return ns.prefix === prefix; });
         if (!ns) {
             throw new Error("Namespace prefix \"" + prefix + "\" could not be resolved to an URI using <sch:ns>");
         }
         return ns.uri;
     };
     Schema.fromJson = function (json) {
-        return new Schema(json.title, json.defaultPhase, json.variables.map(function (obj) { return Variable_1.default.fromJson(obj); }), json.phases.map(function (obj) { return Phase_1.default.fromJson(obj); }), json.patterns.map(function (obj) { return Pattern_1.default.fromJson(obj); }), json.nss.map(function (obj) { return Ns_1.default.fromJson(obj); }));
+        return new Schema(json.title, json.defaultPhase, json.variables.map(function (obj) { return Variable_1.default.fromJson(obj); }), json.phases.map(function (obj) { return Phase_1.default.fromJson(obj); }), json.patterns.map(function (obj) { return Pattern_1.default.fromJson(obj); }), json.namespaces.map(function (obj) { return Namespace_1.default.fromJson(obj); }));
     };
     Schema.fromDomToJson = function (schematronDom) {
         return fontoxpath_1.evaluateXPath(Schema.QUERY, schematronDom, null, {}, null, {
@@ -79,7 +79,7 @@ var Schema = /** @class */ (function () {
     Schema.fromString = function (schematronXmlString) {
         return Schema.fromDom(slimdom_sax_parser_1.sync(schematronXmlString));
     };
-    Schema.QUERY = "\n\t\tdeclare namespace sch = 'http://purl.oclc.org/dsdl/schematron';\n\n\t\tdeclare function local:json($node as node()) {\n\t\t\tif ($node[self::text()])\n\t\t\t\tthen $node/string()\n\t\t\telse\n\t\t\tmap:merge((\n\t\t\t\tmap:entry('$type', $node/name()),\n\t\t\t\tfor $attr in $node/@*\n\t\t\t\t\treturn map:entry($attr/name(), $attr/string())\n\t\t\t))\n\t\t};\n\n\t\tlet $context := /*[1]\n\t\treturn map {\n\t\t\t'title': $context/@title/string(),\n\t\t\t'defaultPhase': $context/@defaultPhase/string(),\n\t\t\t'phases': array { $context/sch:phase/" + Phase_1.default.QUERY + "},\n\t\t\t'patterns': array { $context/sch:pattern/" + Pattern_1.default.QUERY + "},\n\t\t\t'variables': array { $context/sch:let/" + Variable_1.default.QUERY + "},\n\t\t\t'nss': array { $context/sch:ns/" + Ns_1.default.QUERY + "}\n\t\t}\n\t";
+    Schema.QUERY = "\n\t\tdeclare namespace sch = 'http://purl.oclc.org/dsdl/schematron';\n\n\t\tdeclare function local:json($node as node()) {\n\t\t\tif ($node[self::text()])\n\t\t\t\tthen $node/string()\n\t\t\telse\n\t\t\tmap:merge((\n\t\t\t\tmap:entry('$type', $node/name()),\n\t\t\t\tfor $attr in $node/@*\n\t\t\t\t\treturn map:entry($attr/name(), $attr/string())\n\t\t\t))\n\t\t};\n\n\t\tlet $context := /*[1]\n\t\treturn map {\n\t\t\t'title': $context/@title/string(),\n\t\t\t'defaultPhase': $context/@defaultPhase/string(),\n\t\t\t'phases': array { $context/sch:phase/" + Phase_1.default.QUERY + "},\n\t\t\t'patterns': array { $context/sch:pattern/" + Pattern_1.default.QUERY + "},\n\t\t\t'variables': array { $context/sch:let/" + Variable_1.default.QUERY + "},\n\t\t\t'namespaces': array { $context/sch:ns/" + Namespace_1.default.QUERY + "}\n\t\t}\n\t";
     return Schema;
 }());
 exports.default = Schema;

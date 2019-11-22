@@ -17,18 +17,18 @@
 
 	<pattern id="human-age">
 		<rule context="homo-sapien">
-			<report test="age &gt; 18">
+			<report test="age &gt; 18" id="human-adulthood">
 				Human "<value-of select="name" />" reached pityful adulthood.
 			</report>
-			<assert test="not(@smoker and age &gt; 100)">
+			<assert test="not(@smoker and age &gt; 100)" id="human-old">
 				Human "<value-of select="name" />" cannot live longer than a hundred years as a smoker.
 			</assert>
 		</rule>
 		<rule context="homo-erectus">
-			<report test="age &gt; 18">
+			<report test="age &gt; 18" id="human-primitive">
 				Congratulations to cave-man "<value-of select="name" />" for living such a long life.
 			</report>
-			<assert test="not(@smoker)">
+			<assert test="not(@smoker)" id="human-instinct">
 				Early man "<value-of select="name" />" should have been smart enough not to smoke.
 			</assert>
 		</rule>

@@ -40,6 +40,8 @@ const results = schema.validateString(`<xml foo="err">
 To use as a command in your terminal, install globally like: `npm install -g node-schematron`. Alternatively, you can
 use `npx` to run it.
 
+
+
 The `node-schematron` command has two parameters, the last one of which is optional:
 
 1. `schematronLocation`, required, an absolute path or relative reference to your schematron XML. For example `my-schema.sch`.
@@ -56,6 +58,8 @@ The `node-schematron` command has two parameters, the last one of which is optio
   node-schematron my-schema "docs/**/*.xml"
   # Gives the results for all "*.xml" files in the docs/ directory and all subdirectories
 ```
+
+Besides that you can give it a fair amount of options:
 
 | Long name     | Short | Description |
 |---------------|-------|-------------|

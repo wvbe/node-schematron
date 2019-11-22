@@ -3,7 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var fontoxpath_1 = require("fontoxpath");
 var Result_1 = require("./Result");
 var Assert = /** @class */ (function () {
-    function Assert(test, message, isReport) {
+    function Assert(id, test, message, isReport) {
+        this.id = id;
         this.test = test;
         this.message = message;
         this.isReport = isReport;
@@ -40,9 +41,9 @@ var Assert = /** @class */ (function () {
             : new Result_1.default(context, this, this.createMessageString(context, variables, namespaceResolver, this.message));
     };
     Assert.fromJson = function (json) {
-        return new Assert(json.test, json.message, json.isReport);
+        return new Assert(json.id, json.test, json.message, json.isReport);
     };
-    Assert.QUERY = "map {\n\t\t'test': @test/string(),\n\t\t'message': array { (./text()|./element())/local:json(.) },\n\t\t'isReport': boolean(local-name() = 'report')\n\t}";
+    Assert.QUERY = "map {\n\t\t'id': if (@id) then string(@id) else (),\n\t\t'test': @test/string(),\n\t\t'message': array { (./text()|./element())/local:json(.) },\n\t\t'isReport': boolean(local-name() = 'report')\n\t}";
     return Assert;
 }());
 exports.default = Assert;

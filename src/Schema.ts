@@ -4,7 +4,7 @@ import { sync } from 'slimdom-sax-parser';
 import Variable from './Variable';
 import Phase from './Phase';
 import Pattern from './Pattern';
-import Ns from './Ns';
+import Namespace from './Namespace';
 import Result from './Result';
 
 export default class Schema {
@@ -13,7 +13,7 @@ export default class Schema {
 	public variables: Variable[];
 	public phases: Phase[];
 	public patterns: Pattern[];
-	public nss: Ns[];
+	public namespaces: Namespace[];
 
 	constructor(
 		title: string,
@@ -21,14 +21,14 @@ export default class Schema {
 		variables: Variable[],
 		phases: Phase[],
 		patterns: Pattern[],
-		nss: Ns[]
+		namespaces: Namespace[]
 	) {
 		this.title = title;
 		this.defaultPhase = defaultPhase;
 		this.variables = variables;
 		this.phases = phases;
 		this.patterns = patterns;
-		this.nss = nss;
+		this.namespaces = namespaces;
 	}
 
 	validateString(documentXmlString: string, phaseId?: string): Result[] {
@@ -74,7 +74,7 @@ export default class Schema {
 		if (!prefix) {
 			return null;
 		}
-		const ns = this.nss.find((ns) => ns.prefix === prefix);
+		const ns = this.namespaces.find((ns) => ns.prefix === prefix);
 		if (!ns) {
 			throw new Error(`Namespace prefix "${prefix}" could not be resolved to an URI using <sch:ns>`);
 		}
@@ -103,7 +103,7 @@ export default class Schema {
 			'phases': array { $context/sch:phase/${Phase.QUERY}},
 			'patterns': array { $context/sch:pattern/${Pattern.QUERY}},
 			'variables': array { $context/sch:let/${Variable.QUERY}},
-			'nss': array { $context/sch:ns/${Ns.QUERY}}
+			'namespaces': array { $context/sch:ns/${Namespace.QUERY}}
 		}
 	`;
 
@@ -114,7 +114,7 @@ export default class Schema {
 			json.variables.map((obj) => Variable.fromJson(obj)),
 			json.phases.map((obj) => Phase.fromJson(obj)),
 			json.patterns.map((obj) => Pattern.fromJson(obj)),
-			json.nss.map((obj) => Ns.fromJson(obj))
+			json.namespaces.map((obj) => Namespace.fromJson(obj))
 		);
 	}
 

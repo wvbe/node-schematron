@@ -9,7 +9,7 @@ function namespaceResolver(input, ...rest) {
 }
 
 export default class Pattern {
-	id?: string;
+	id: string | null;
 	rules: Rule[];
 	variables: Variable[];
 
