@@ -4,11 +4,11 @@ This is an Schematron minimal syntax implementation for front- and back-end Java
 a NodeJS dependency as well as in the browser (ie. wrapped by Webpack). It returns a JSON object with the (resolved)
 messages of your assertions.
 
-#### To use programmatically
+## To use programmatically
 
 To use programmatically, install to your project like any other npm module: `npm install node-schematron`
 
-```
+```js
 const { Schema } = require('node-schematron');
 
 const schema = Schema.fromString(`<schema xmlns="http://purl.oclc.org/dsdl/schematron">
@@ -25,9 +25,17 @@ const schema = Schema.fromString(`<schema xmlns="http://purl.oclc.org/dsdl/schem
 const results = schema.validateString(`<xml foo="err">
 	<thunder foo="bar" />
 </xml>`);
+
+// results === [
+//   {
+//      isReport: true,
+//      context: <thunder foo="bar" />,
+//      message: '\n\t\t\t\tSkeet boop bar\n\t\t\t'
+//   }
+// ]
 ```
 
-#### To use from command line
+## To use from command line
 
 To use as a command in your terminal, install globally like: `npm install -g node-schematron`. Alternatively, you can
 use `npx` to run it.
@@ -70,7 +78,7 @@ The `node-schematron` command has two parameters, the last one of which is optio
   # Validates the "publication" phase and writes an XUnit XML report to file
 ```
 
-#### Compliance
+## Compliance
 
 As for features, check out the unit tests in `test/`. I've mirrored them to the text of [ISO/IEC 19757-3 2016](./docs/c055982_ISO_IEC_19757-3_2016.pdf) in order to clearly assert how far `node-schematron` is up to spec.
 I've also noticed there's different ways you can read that text, so please file an issue if you feel `node-schematron`
@@ -96,13 +104,13 @@ behaves in a non-standard or buggy way.
 
 Not supported attributes are `@abstract`, `@diagnostics`, `@icon`, `@see`, `@fpi`, `@flag`, `@role` and `@subject`.
 
-#### Support
+## Support
 
 -   Every pull request will be considered and responded to.
 -   The schematron query language is XPath 3.1, implemented by [fontoxpath](https://www.npmjs.com/package/fontoxpath). It
     is [not yet feature complete](https://documentation.fontoxml.com/editor/latest/xpath-25591894.html).
 
-#### License
+## License
 
 Copyright (c) 2019 Wybe Minnebo
 
