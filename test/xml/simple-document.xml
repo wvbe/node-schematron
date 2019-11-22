@@ -15,7 +15,7 @@
 		<name>G. Thunberg</name>
 		<age>12</age>
 	</homo-sapien>
-	<homo-erectus smoker="true">
+	<homo-erectus smoker="true"
 		<name>D. Trump</name>
 		<age>99</age>
 	</homo-erectus>

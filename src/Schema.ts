@@ -90,7 +90,7 @@ export default class Schema {
 				then $node/string()
 			else
 			map:merge((
-				map:entry('$type', $node/name()),
+				map:entry('$type', $node/local-name()),
 				for $attr in $node/@*
 					return map:entry($attr/name(), $attr/string())
 			))

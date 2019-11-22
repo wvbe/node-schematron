@@ -4,7 +4,7 @@ const ASCII_COLOR_RED = '\x1b[31m';
 const ASCII_COLOR_BLUE = '\u001b[34;1m';
 const ASCII_COLOR_DEFAULT = '\x1b[0m';
 const ASCII_CHECKMARK = '▲';
-const ASCII_WARNING = ' ' + ASCII_COLOR_RED + '▼' + ASCII_COLOR_DEFAULT + ' ';
+const ASCII_WARNING = '▼';
 const ASCII_CROSSMARK = '✘';
 
 function formatPrefix(char, color, text) {
@@ -107,8 +107,14 @@ module.exports = function bindXunitReporterToEvents(req, events, stream) {
 				++stats.totalAsserts;
 			}
 			result.isReport
-				? npmlog.report(formatPrefix(ASCII_CHECKMARK, ASCII_COLOR_BLUE, result.assertId), result.message.trim())
-				: npmlog.assert(formatPrefix(ASCII_CROSSMARK, ASCII_COLOR_RED, result.assertId), result.message.trim());
+				? npmlog.report(
+						formatPrefix(ASCII_CHECKMARK, ASCII_COLOR_BLUE, result.assertId),
+						result.message.replace(/\s\s+/g, ' ').trim()
+					)
+				: npmlog.assert(
+						formatPrefix(ASCII_CROSSMARK, ASCII_COLOR_RED, result.assertId),
+						result.message.replace(/\s\s+/g, ' ').trim()
+					);
 		});
 	});
 

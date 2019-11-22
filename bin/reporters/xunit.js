@@ -1,62 +1,75 @@
-const { slimdom } = require('slimdom-sax-parser');
-const { evaluateXPath } = require('fontoxpath');
+const { sync, slimdom } = require('slimdom-sax-parser');
+const { EOL } = require('os');
+const { evaluateXPathToFirstNode } = require('fontoxpath');
 
 // JUnit XSD: https://github.com/michaelleeallen/mocha-junit-reporter/blob/master/test/resources/JUnit.xsd
 // See also: https://help.catchsoftware.com/display/ET/JUnit+Format
 
-const CREATE_NODE_QUERY = `
-	declare function local:generateTestSuite ($index, $file) {
-		<testsuite
-			id="{$index - 1}"
-			errors="{$file('$errors')}"
-			tests="{$file('$tests')}"
-			failures="{$file('$failures')}"
-		>
-		{
-			for $report in array:flatten($file('$value'))
-				return <testcase
-					classname="{$file('$fileNameBase')}"
-					name="{fn:normalize-space($report('message'))}"
-				>
-				{ if ($report('isReport')) then () else <failure type="assert" /> }
-				</testcase>
-		}
-		</testsuite>
-	};
-
-	<testsuites suites="{$fileCount}">
-		{
-			for $index in 1 to $fileCount cast as xs:int
-				return local:generateTestSuite($index, $files($index))
-		}
-	</testsuites>
-`;
-
 module.exports = function bindXunitReporterToEvents(req, events, stream) {
-	const files = [];
+	if (!stream) {
+		// Somebody obviously wants us to shut up
+		return;
+	}
 
-	events.on('file', (file) => {
-		file.$tests = file.$failures = file.$skipped = file.$errors = 0;
-		file.$error && ++file.$errors;
-		file.$value.forEach((report) => ++file.$tests && (report.isReport ? ++file.$skipped : ++file.$failures));
+	const document = sync(`<testsuites></testsuites>`);
+	const testSuitesNode = evaluateXPathToFirstNode('//testsuites', document);
 
-		files.push(file);
+	events.on('file', (file, fileIndex) => {
+		const testSuiteElement = document.createElement('testsuite');
+
+		const totals = {
+			tests: file.$value ? file.$value.length : 0,
+			skipped: 0,
+			failures: 0,
+			errors: 0
+		};
+
+		if (file.$error) {
+			++totals.errors;
+			return;
+		} else {
+			file.$value.forEach((report) => {
+				const safeMessage = report.message.replace(/\s\s+/g, '').trim();
+
+				const testCaseElement = document.createElement('testcase');
+				testCaseElement.setAttribute('classname', file.$fileNameBase);
+				testCaseElement.setAttribute('name', safeMessage);
+
+				if (report.isReport) {
+					// JUnit does not seem to provide for reports, so not writing anything
+					++totals.skipped;
+					testCaseElement.appendChild(document.createElement('skipped'));
+				} else {
+					++totals.failures;
+					const errorElement = document.createElement('failure');
+
+					// A schematron assert/report may not have a unique identifier, or something else to put here
+					errorElement.setAttribute('type', 'assert');
+
+					// Attribute is not required per XSD, and we have nothing useful to add
+					// errorElement.setAttribute('message', 'Assertion failed');
+
+					testCaseElement.appendChild(errorElement);
+				}
+
+				testSuiteElement.appendChild(testCaseElement);
+			});
+		}
+
+		testSuiteElement.setAttribute('errors', totals.errors);
+		testSuiteElement.setAttribute('failures', totals.failures);
+		testSuiteElement.setAttribute('id', fileIndex);
+		testSuiteElement.setAttribute('name', file.$fileNameBase);
+		testSuiteElement.setAttribute('skipped', totals.skipped);
+		testSuiteElement.setAttribute('tests', totals.tests);
+		testSuiteElement.setAttribute('timestamp', new Date().toISOString());
+
+		testSuitesNode.appendChild(testSuiteElement);
 	});
 
-	events.on('end', () => {
-		const variables = {
-			files,
-			fileCount: files.length
-		};
-		const options = {
-			language: evaluateXPath.XQUERY_3_1_LANGUAGE,
-			debug: true
-		};
-		const document = evaluateXPath(CREATE_NODE_QUERY, new slimdom.Document(), null, variables, null, options);
-
-		stream.write(slimdom.serializeToWellFormedString(document));
-	});
+	events.on('end', () => stream.write(slimdom.serializeToWellFormedString(document) + EOL));
 };
+
 
 /*
 
