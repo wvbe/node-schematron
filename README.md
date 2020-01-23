@@ -86,7 +86,7 @@ Besides that you can give it a fair amount of options:
 
 To define custom XPath functions, import `registerCustomXPathFunction` from `fontoxpath`:
 
-```
+```js
 registerCustomXPathFunction(
   {
     localName: 'is-foo',
