@@ -82,6 +82,25 @@ Besides that you can give it a fair amount of options:
   # Validates the "publication" phase and writes an XUnit XML report to file
 ```
 
+## Custom functions
+
+To define custom XPath functions, import `registerCustomXPathFunction` from `fontoxpath`:
+
+```
+registerCustomXPathFunction(
+  {
+    localName: 'is-foo',
+    namespaceURI: 'http://example.com',
+  },
+  ['xs:string?'],
+  'xs:boolean',
+  (domFacade, input) => input === 'foo'
+)
+```
+
+See the [fontoxpath "global functions" documentation](https://github.com/FontoXML/fontoxpath#global-functions) for more information.
+
+
 ## Compliance
 
 As for features, check out the unit tests in `test/`. I've mirrored them to the text of [ISO/IEC 19757-3 2016](./docs/c055982_ISO_IEC_19757-3_2016.pdf) in order to clearly assert how far `node-schematron` is up to spec.
