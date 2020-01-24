@@ -84,9 +84,11 @@ Besides that you can give it a fair amount of options:
 
 ## Custom functions
 
-To define custom XPath functions, import `registerCustomXPathFunction` from `fontoxpath`:
+To define custom XPath functions, import `registerCustomXPathFunction`:
 
 ```js
+const { registerCustomXPathFunction } = require('node-schematron');
+
 registerCustomXPathFunction(
   {
     localName: 'is-foo',
@@ -95,10 +97,12 @@ registerCustomXPathFunction(
   ['xs:string?'],
   'xs:boolean',
   (domFacade, input) => input === 'foo'
-)
+);
 ```
 
-See the [fontoxpath "global functions" documentation](https://github.com/FontoXML/fontoxpath#global-functions) for more information.
+The `registerCustomXPathFunction` is an alias for the same function in `fontoxpath`. See the
+[fontoxpath "global functions" documentation](https://github.com/FontoXML/fontoxpath#global-functions) for more
+information.
 
 
 ## Compliance
