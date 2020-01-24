@@ -23,7 +23,7 @@
 	"bin": {
 		"node-schematron": "./bin/schematron.js"
 	},
-	"main": "dist",
+	"main": "dist/index.js",
 	"scripts": {
 		"prepublish": "jest && npm run ts:build",
 		"test": "jest",
