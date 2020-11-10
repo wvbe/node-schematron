@@ -1,0 +1,10 @@
+/node_modules
+
+# source files
+/src
+/docs
+# misc configuration files
+/.gitignore
+/.github
+/tsconfig.json
+/typedoc.json
