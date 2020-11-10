@@ -1,13 +1,18 @@
-import { evaluateXPathToString, evaluateXPathToBoolean, Node } from 'fontoxpath';
-import Result from './Result';
+import { evaluateXPathToString, evaluateXPathToBoolean } from 'fontoxpath';
+import { Result } from './Result';
 
-export default class Assert {
+export class Assert {
 	id: string | null;
 	test: string;
 	message: Array<string | Object>;
 	isReport: boolean;
 
-	constructor(id: string | null, test: string, message, isReport) {
+	constructor(
+		id: string | null,
+		test: string,
+		message: Array<string | Object>,
+		isReport: boolean
+	) {
 		this.id = id;
 		this.test = test;
 		this.message = message;
@@ -17,7 +22,7 @@ export default class Assert {
 	createMessageString(
 		contextNode: Node,
 		variables: Object,
-		namespaceResolver: (prefix: string) => string,
+		namespaceResolver: (prefix?: string | null) => string | null,
 		chunks: Array<string | any>
 	): string {
 		return chunks
@@ -55,7 +60,7 @@ export default class Assert {
 	validateNode(
 		context: Node,
 		variables: Object,
-		namespaceResolver: (prefix: string) => string
+		namespaceResolver: (prefix?: string | null) => string | null
 	): Result | null {
 		const outcome = evaluateXPathToBoolean(this.test, context, null, variables, {
 			namespaceResolver
@@ -76,7 +81,14 @@ export default class Assert {
 		'isReport': boolean(local-name() = 'report')
 	}`;
 
-	static fromJson(json): Assert {
+	static fromJson(json: JsonAssert): Assert {
 		return new Assert(json.id, json.test, json.message, json.isReport);
 	}
 }
+
+export type JsonAssert = {
+	id: string | null;
+	test: string;
+	message: Array<string | Object>;
+	isReport: boolean;
+};

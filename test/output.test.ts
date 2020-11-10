@@ -1,4 +1,4 @@
-import { Schema } from '../index';
+import { Schema } from '../src/index';
 
 const SCHEMATRON_EXAMPLE = `<schema xmlns="http://purl.oclc.org/dsdl/schematron">
 	<ns prefix="drp" uri="http://derp" />

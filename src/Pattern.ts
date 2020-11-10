@@ -1,14 +1,10 @@
 import { evaluateXPathToNodes } from 'fontoxpath';
 
-import Variable from './Variable';
-import Rule from './Rule';
+import { Variable, JsonVariable } from './Variable';
+import { Rule, JsonRule } from './Rule';
+import { Result } from './Result';
 
-function namespaceResolver(input, ...rest) {
-	console.log('Pattern namespaceResolver', input, ...rest);
-	return input;
-}
-
-export default class Pattern {
+export class Pattern {
 	id: string | null;
 	rules: Rule[];
 	variables: Variable[];
@@ -19,7 +15,11 @@ export default class Pattern {
 		this.variables = variables;
 	}
 
-	validateDocument(documentDom, parentVariables, namespaceResolver: (prefix: string) => string) {
+	validateDocument(
+		documentDom: Document,
+		parentVariables: object | null,
+		namespaceResolver: (prefix?: string | null) => string | null
+	) {
 		const variables = Variable.reduceVariables(documentDom, this.variables, namespaceResolver, {
 			...parentVariables
 		});
@@ -28,7 +28,7 @@ export default class Pattern {
 				namespaceResolver
 			})
 		);
-		const flattenValidationResults = (results, node) => {
+		const flattenValidationResults = (results: Result[], node: Node): Result[] => {
 			const ruleIndex = ruleContexts.findIndex(context => context.includes(node));
 			const rule = ruleIndex >= 0 ? this.rules[ruleIndex] : null;
 			if (rule) {
@@ -39,10 +39,10 @@ export default class Pattern {
 				);
 			}
 
-			return node.childNodes.reduce(flattenValidationResults, results);
+			return Array.from(node.childNodes).reduce(flattenValidationResults, results);
 		};
 
-		return documentDom.childNodes.reduce(flattenValidationResults, []);
+		return Array.from(documentDom.childNodes).reduce(flattenValidationResults, []);
 	}
 
 	static QUERY = `map {
@@ -51,7 +51,7 @@ export default class Pattern {
 		'variables': array { ./sch:let/${Variable.QUERY}}
 	}`;
 
-	static fromJson(json): Pattern {
+	static fromJson(json: JsonPattern): Pattern {
 		return new Pattern(
 			json.id,
 			json.rules.map(obj => Rule.fromJson(obj)),
@@ -59,3 +59,9 @@ export default class Pattern {
 		);
 	}
 }
+
+export type JsonPattern = {
+	id: string | null;
+	rules: JsonRule[];
+	variables: JsonVariable[];
+};

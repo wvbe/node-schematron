@@ -1,4 +1,4 @@
-import { Schema } from '../index';
+import { Schema } from '../src/index';
 
 // Tests <ns>
 // See also section 5.4.7 of ISO/IEC 19757-3

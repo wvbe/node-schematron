@@ -1,24 +1,19 @@
-import { slimdom } from 'slimdom-sax-parser';
+import { Assert } from './Assert';
 
-import Assert from './Assert';
-// import Phase from './Phase';
-// import Rule from './Rule';
-// import Pattern from './Pattern';
-
-export default class Result {
+export class Result {
 	// pattern: Pattern;
 	// phase?: Phase;
 	// rule: Rule;
 	assertId: string | null;
 	isReport: boolean;
-	context: slimdom.Node;
+	context: Node;
 	message?: string;
 
 	constructor(
 		// pattern: Pattern,
 		// phase?: Phase,
 		// rule: Rule,
-		context: slimdom.Node,
+		context: Node,
 		assert: Assert,
 		message?: string
 	) {
@@ -31,12 +26,12 @@ export default class Result {
 		this.message = message;
 	}
 
-	toJson () {
+	toJson() {
 		return {
 			assertId: this.assertId,
 			isReport: this.isReport,
-			context: this.context.outerHTML,
+			context: (this.context as HTMLElement).outerHTML,
 			message: this.message
-		}
+		};
 	}
 }

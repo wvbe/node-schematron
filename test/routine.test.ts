@@ -1,4 +1,4 @@
-import { Schema } from '../index';
+import { Schema } from '../src/index';
 
 describe('Validation routine', () => {
 	const schema = Schema.fromString(

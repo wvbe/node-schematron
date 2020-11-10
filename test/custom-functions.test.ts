@@ -1,4 +1,4 @@
-import { Schema, registerCustomXPathFunction } from '../index';
+import { Schema, registerCustomXPathFunction } from '../src/index';
 
 describe('Custom XPath functions', () => {
 	const schema = Schema.fromString(
@@ -19,7 +19,7 @@ describe('Custom XPath functions', () => {
 		},
 		['xs:string?'],
 		'xs:boolean',
-		(domFacade, input) => input === 'foo'
+		(_domFacade, input) => input === 'foo'
 	);
 
 	it('Work in reports and asserts', () => {

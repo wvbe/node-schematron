@@ -1,4 +1,4 @@
-import { Schema } from '../index';
+import { Schema } from '../src/index';
 
 // Tests <phase>
 // See also section 5.4.10 of ISO/IEC 19757-3
