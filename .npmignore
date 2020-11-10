@@ -3,6 +3,8 @@
 # source files
 /src
 /docs
+/test
+
 # misc configuration files
 /.gitignore
 /.github

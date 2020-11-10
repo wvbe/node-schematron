@@ -30,6 +30,13 @@
 		"prepare": "tsdx build",
 		"demo": "node ./bin/schematron.js \"test/xml/simple-schematron.xml\" \"test/xml/simple-document.xml\""
 	},
+	"dependencies": {
+		"ask-nicely": "^4.0.4",
+		"fontoxpath": "^3.14.0",
+		"globby": "^11.0.1",
+		"npmlog": "^4.1.2",
+		"slimdom-sax-parser": "^1.4.0"
+	},
 	"devDependencies": {
 		"tsdx": "^0.14.1",
 		"tslib": "^2.0.3",
@@ -43,12 +50,5 @@
 		"tabWidth": 4,
 		"trailingComma": "none",
 		"useTabs": true
-	},
-	"dependencies": {
-		"ask-nicely": "^4.0.4",
-		"fontoxpath": "^3.14.0",
-		"globby": "^11.0.1",
-		"npmlog": "^4.1.2",
-		"slimdom-sax-parser": "^1.4.0"
 	}
 }
