@@ -1,14 +1,12 @@
 import { evaluateXPathToNodes } from 'fontoxpath';
 
-import Variable from './Variable';
-import Rule from './Rule';
+import { Result } from './Result';
+import { Rule, RuleJson } from './Rule';
+import { Variable, VariableJson } from './Variable';
 
-function namespaceResolver(input, ...rest) {
-	console.log('Pattern namespaceResolver', input, ...rest);
-	return input;
-}
+import { FontoxpathOptions } from './types';
 
-export default class Pattern {
+export class Pattern {
 	id: string | null;
 	rules: Rule[];
 	variables: Variable[];
@@ -19,30 +17,38 @@ export default class Pattern {
 		this.variables = variables;
 	}
 
-	validateDocument(documentDom, parentVariables, namespaceResolver: (prefix: string) => string) {
-		const variables = Variable.reduceVariables(documentDom, this.variables, namespaceResolver, {
+	validateDocument(
+		documentDom: Document,
+		parentVariables: object | null,
+		fontoxpathOptions: FontoxpathOptions
+	) {
+		const variables = Variable.reduceVariables(documentDom, this.variables, fontoxpathOptions, {
 			...parentVariables
 		});
 		const ruleContexts = this.rules.map(rule =>
-			evaluateXPathToNodes('//(' + rule.context + ')', documentDom, null, variables, {
-				namespaceResolver
-			})
+			evaluateXPathToNodes(
+				'//(' + rule.context + ')',
+				documentDom,
+				null,
+				variables,
+				fontoxpathOptions
+			)
 		);
-		const flattenValidationResults = (results, node) => {
+		const flattenValidationResults = (results: Result[], node: Node): Result[] => {
 			const ruleIndex = ruleContexts.findIndex(context => context.includes(node));
 			const rule = ruleIndex >= 0 ? this.rules[ruleIndex] : null;
 			if (rule) {
 				results.splice(
 					results.length,
 					0,
-					...rule.validateNode(node, variables, namespaceResolver)
+					...rule.validateNode(node, variables, fontoxpathOptions)
 				);
 			}
 
-			return node.childNodes.reduce(flattenValidationResults, results);
+			return Array.from(node.childNodes).reduce(flattenValidationResults, results);
 		};
 
-		return documentDom.childNodes.reduce(flattenValidationResults, []);
+		return Array.from(documentDom.childNodes).reduce(flattenValidationResults, []);
 	}
 
 	static QUERY = `map {
@@ -51,7 +57,7 @@ export default class Pattern {
 		'variables': array { ./sch:let/${Variable.QUERY}}
 	}`;
 
-	static fromJson(json): Pattern {
+	static fromJson(json: PatternJson): Pattern {
 		return new Pattern(
 			json.id,
 			json.rules.map(obj => Rule.fromJson(obj)),
@@ -59,3 +65,9 @@ export default class Pattern {
 		);
 	}
 }
+
+export type PatternJson = {
+	id: string | null;
+	rules: RuleJson[];
+	variables: VariableJson[];
+};

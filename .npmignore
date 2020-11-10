@@ -1,7 +1,12 @@
-*.ts
-/.babelrc.js
-/docs
+/node_modules
+
+# source files
 /src
+/docs
 /test
-/coverage
-tsconfig.json
+
+# misc configuration files
+/.gitignore
+/.github
+/tsconfig.json
+/typedoc.json

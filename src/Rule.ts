@@ -1,25 +1,32 @@
-import Variable from './Variable';
-import Assert from './Assert';
+import { Assert, AssertJson } from './Assert';
+import { Result } from './Result';
+import { Variable, VariableJson } from './Variable';
 
-export default class Rule {
+import { FontoxpathOptions } from './types';
+
+export class Rule {
 	context: string;
 	variables: Variable[];
 	asserts: Assert[];
 
-	constructor(context, variables, asserts) {
+	constructor(context: string, variables: Variable[], asserts: Assert[]) {
 		this.context = context;
 		this.variables = variables;
 		this.asserts = asserts;
 	}
 
-	validateNode(context, parentVariables, namespaceResolver) {
-		const variables = Variable.reduceVariables(context, this.variables, namespaceResolver, {
+	validateNode(
+		context: Node,
+		parentVariables: Object | null,
+		fontoxpathOptions: FontoxpathOptions
+	): Result[] {
+		const variables = Variable.reduceVariables(context, this.variables, fontoxpathOptions, {
 			...parentVariables
 		});
 
 		return this.asserts
-			.map(assert => assert.validateNode(context, variables, namespaceResolver))
-			.filter(result => !!result);
+			.map(assert => assert.validateNode(context, variables, fontoxpathOptions))
+			.filter(result => result !== null) as Result[];
 	}
 
 	static QUERY = `map {
@@ -28,10 +35,16 @@ export default class Rule {
 		'asserts': array{ ./(sch:report|sch:assert)/${Assert.QUERY}}
 	}`;
 
-	static fromJson(json): Rule {
+	static fromJson(json: RuleJson): Rule {
 		const variables = json.variables.map(rule => Variable.fromJson(rule));
 		const asserts = json.asserts.map(rule => Assert.fromJson(rule));
 
 		return new Rule(json.context, variables, asserts);
 	}
 }
+
+export type RuleJson = {
+	context: string;
+	variables: VariableJson[];
+	asserts: AssertJson[];
+};

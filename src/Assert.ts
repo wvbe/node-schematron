@@ -1,13 +1,21 @@
-import { evaluateXPathToString, evaluateXPathToBoolean, Node } from 'fontoxpath';
-import Result from './Result';
+import { evaluateXPathToBoolean, evaluateXPathToString } from 'fontoxpath';
 
-export default class Assert {
+import { Result } from './Result';
+
+import { FontoxpathOptions } from './types';
+
+export class Assert {
 	id: string | null;
 	test: string;
 	message: Array<string | Object>;
 	isReport: boolean;
 
-	constructor(id: string | null, test: string, message, isReport) {
+	constructor(
+		id: string | null,
+		test: string,
+		message: Array<string | Object>,
+		isReport: boolean
+	) {
 		this.id = id;
 		this.test = test;
 		this.message = message;
@@ -17,7 +25,7 @@ export default class Assert {
 	createMessageString(
 		contextNode: Node,
 		variables: Object,
-		namespaceResolver: (prefix: string) => string,
+		fontoxpathOptions: FontoxpathOptions,
 		chunks: Array<string | any>
 	): string {
 		return chunks
@@ -33,17 +41,19 @@ export default class Assert {
 						contextNode,
 						null,
 						variables,
-						{
-							namespaceResolver
-						}
+						fontoxpathOptions
 					);
 				}
 
 				// <sch:value-of />
 				if (chunk.$type === 'value-of') {
-					return evaluateXPathToString(chunk.select, contextNode, null, variables, {
-						namespaceResolver
-					});
+					return evaluateXPathToString(
+						chunk.select,
+						contextNode,
+						null,
+						variables,
+						fontoxpathOptions
+					);
 				}
 
 				console.log(chunk);
@@ -55,17 +65,21 @@ export default class Assert {
 	validateNode(
 		context: Node,
 		variables: Object,
-		namespaceResolver: (prefix: string) => string
+		fontoxpathOptions: FontoxpathOptions
 	): Result | null {
-		const outcome = evaluateXPathToBoolean(this.test, context, null, variables, {
-			namespaceResolver
-		});
+		const outcome = evaluateXPathToBoolean(
+			this.test,
+			context,
+			null,
+			variables,
+			fontoxpathOptions
+		);
 		return (!this.isReport && outcome) || (this.isReport && !outcome)
 			? null
 			: new Result(
 					context,
 					this,
-					this.createMessageString(context, variables, namespaceResolver, this.message)
+					this.createMessageString(context, variables, fontoxpathOptions, this.message)
 			  );
 	}
 
@@ -76,7 +90,14 @@ export default class Assert {
 		'isReport': boolean(local-name() = 'report')
 	}`;
 
-	static fromJson(json): Assert {
+	static fromJson(json: AssertJson): Assert {
 		return new Assert(json.id, json.test, json.message, json.isReport);
 	}
 }
+
+export type AssertJson = {
+	id: string | null;
+	test: string;
+	message: Array<string | Object>;
+	isReport: boolean;
+};

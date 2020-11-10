@@ -1,13 +1,15 @@
 import { evaluateXPath } from 'fontoxpath';
 import { sync } from 'slimdom-sax-parser';
 
-import Variable from './Variable';
-import Phase from './Phase';
-import Pattern from './Pattern';
-import Namespace from './Namespace';
-import Result from './Result';
+import { Namespace, NamespaceJson } from './Namespace';
+import { Pattern, PatternJson } from './Pattern';
+import { Phase, PhaseJson } from './Phase';
+import { Result } from './Result';
+import { Variable, VariableJson } from './Variable';
 
-export default class Schema {
+import { FontoxpathOptions } from './types';
+
+export class Schema {
 	public title: string;
 	public defaultPhase: string | null;
 	public variables: Variable[];
@@ -31,52 +33,78 @@ export default class Schema {
 		this.namespaces = namespaces;
 	}
 
-	validateString(documentXmlString: string, phaseId?: string): Result[] {
-		return this.validateDocument(sync(documentXmlString), phaseId);
+	validateString(documentXmlString: string, options?: ValidatorOptions): Result[] {
+		// Typescript casting slimdom.Document to Document, which are the same
+		return this.validateDocument((sync(documentXmlString) as unknown) as Document, options);
 	}
 
-	validateDocument(documentDom: Document, phaseId?: string): Result[] {
+	validateDocument(documentDom: Document, options?: ValidatorOptions): Result[] {
+		let { phaseId, debug } = options || {};
 		if (!phaseId) {
 			phaseId = '#DEFAULT';
 		}
 		if (phaseId === '#DEFAULT') {
 			phaseId = this.defaultPhase || '#ALL';
 		}
-
-		const namespaceResolver = this.getNamespaceUriForPrefix.bind(this);
-		const variables = Variable.reduceVariables(documentDom, this.variables, namespaceResolver, {});
+		const fontoxpathOptions: FontoxpathOptions = {
+			namespaceResolver: this.getNamespaceUriForPrefix.bind(this),
+			debug
+		};
+		const variables = Variable.reduceVariables(
+			documentDom,
+			this.variables,
+			fontoxpathOptions,
+			{}
+		);
 
 		if (phaseId === '#ALL') {
 			return this.patterns.reduce(
-				(results, pattern) =>
-					results.concat(pattern.validateDocument(documentDom, variables, namespaceResolver)),
+				(results: Result[], pattern) =>
+					results.concat(
+						pattern.validateDocument(documentDom, variables, fontoxpathOptions)
+					),
 				[]
 			);
 		}
 
-		const phase = this.phases.find((phase) => phase.id === phaseId);
-		const phaseVariables = Variable.reduceVariables(documentDom, phase.variables, namespaceResolver, {
-			...variables
-		});
+		const phase = this.phases.find(phase => phase.id === phaseId);
+		const phaseVariables = Variable.reduceVariables(
+			documentDom,
+			phase?.variables || [],
+			fontoxpathOptions,
+			{
+				...variables
+			}
+		);
 
-		return phase.active
-			.map((patternId) => this.patterns.find((pattern) => pattern.id === patternId))
-			.reduce(
-				(results, pattern) =>
-					results.concat(pattern.validateDocument(documentDom, phaseVariables, namespaceResolver)),
-				[]
-			);
+		return (
+			phase?.active
+				.map(patternId => this.patterns.find(pattern => pattern.id === patternId))
+				.reduce(
+					(results: Result[], pattern) =>
+						results.concat(
+							pattern?.validateDocument(
+								documentDom,
+								phaseVariables,
+								fontoxpathOptions
+							) || []
+						),
+					[]
+				) || []
+		);
 	}
 
 	// TODO more optimally store the namespace prefix/uri mapping. Right now its modeled as an array because there
 	// is a list of <ns> elements that are not really guaranteed to use unique prefixes.
-	getNamespaceUriForPrefix(prefix = null) {
+	getNamespaceUriForPrefix(prefix?: string | null): string | null {
 		if (!prefix) {
 			return null;
 		}
-		const ns = this.namespaces.find((ns) => ns.prefix === prefix);
+		const ns = this.namespaces.find(ns => ns.prefix === prefix);
 		if (!ns) {
-			throw new Error(`Namespace prefix "${prefix}" could not be resolved to an URI using <sch:ns>`);
+			throw new Error(
+				`Namespace prefix "${prefix}" could not be resolved to an URI using <sch:ns>`
+			);
 		}
 
 		return ns.uri;
@@ -107,19 +135,19 @@ export default class Schema {
 		}
 	`;
 
-	static fromJson(json): Schema {
+	static fromJson(json: SchemaJson): Schema {
 		return new Schema(
 			json.title,
 			json.defaultPhase,
-			json.variables.map((obj) => Variable.fromJson(obj)),
-			json.phases.map((obj) => Phase.fromJson(obj)),
-			json.patterns.map((obj) => Pattern.fromJson(obj)),
-			json.namespaces.map((obj) => Namespace.fromJson(obj))
+			json.variables.map(obj => Variable.fromJson(obj)),
+			json.phases.map(obj => Phase.fromJson(obj)),
+			json.patterns.map(obj => Pattern.fromJson(obj)),
+			json.namespaces.map(obj => Namespace.fromJson(obj))
 		);
 	}
 
-	static fromDomToJson(schematronDom: Document): Object {
-		return evaluateXPath(Schema.QUERY, schematronDom, null, {}, null, {
+	static fromDomToJson(schematronDom: Document): SchemaJson {
+		return evaluateXPath(Schema.QUERY, schematronDom, null, {}, undefined, {
 			language: evaluateXPath.XQUERY_3_1_LANGUAGE
 		});
 	}
@@ -129,6 +157,20 @@ export default class Schema {
 	}
 
 	static fromString(schematronXmlString: string): Schema {
-		return Schema.fromDom(sync(schematronXmlString));
+		return Schema.fromDom((sync(schematronXmlString) as unknown) as Document);
 	}
 }
+
+export type SchemaJson = {
+	title: string;
+	defaultPhase: string | null;
+	variables: VariableJson[];
+	phases: PhaseJson[];
+	patterns: PatternJson[];
+	namespaces: NamespaceJson[];
+};
+
+export type ValidatorOptions = {
+	phaseId?: string;
+	debug?: boolean;
+};

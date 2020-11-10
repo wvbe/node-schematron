@@ -24,7 +24,7 @@ const schema = Schema.fromString(`<schema xmlns="http://purl.oclc.org/dsdl/schem
 
 const results = schema.validateString(`<xml foo="err">
 	<thunder foo="bar" />
-</xml>`);
+</xml>`, { debug: true });
 
 // results === [
 //   {
@@ -65,6 +65,7 @@ Besides that you can give it a fair amount of options:
 |---------------|-------|-------------|
 | `--reporters` | `-r`  | The reporter(s) to use. Zero or many of `npm` or `xunit`, space separated. |
 | `--ok`        | `-o`  | Do not exit process with an error code if at least one document fails a schematron assertion. |
+| `--debug`     | `-D`  | Display extra stack trace information in case of XPath errors |
 | `--files`     | `-f`  | A list of files, in case you can't use the globbing parameter. |
 | `--batch`     | `-b`  | The number of documents to handle before opening the next child process. Defaults to `5000`. |
 | `--phase`     | `-p`  | The schematron phase to run. Defaults to `#DEFAULT` (which means the `@defaultPhase` value or `#ALL`. |

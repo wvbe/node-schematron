@@ -1,6 +1,6 @@
-import Variable from './Variable';
+import { Variable, VariableJson } from './Variable';
 
-export default class Phase {
+export class Phase {
 	id: string;
 	active: string[];
 	variables: Variable[];
@@ -17,7 +17,17 @@ export default class Phase {
 		'variables': array { ./sch:let/${Variable.QUERY}}
 	}`;
 
-	static fromJson(json): Phase {
-		return new Phase(json.id, json.active, json.variables.map(rule => Variable.fromJson(rule)));
+	static fromJson(json: PhaseJson): Phase {
+		return new Phase(
+			json.id,
+			json.active,
+			json.variables.map(rule => Variable.fromJson(rule))
+		);
 	}
 }
+
+export type PhaseJson = {
+	id: string;
+	active: string[];
+	variables: VariableJson[];
+};
