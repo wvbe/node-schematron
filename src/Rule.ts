@@ -1,5 +1,5 @@
-import { Variable, JsonVariable } from './Variable';
-import { Assert, JsonAssert } from './Assert';
+import { Variable, VariableJson } from './Variable';
+import { Assert, AssertJson } from './Assert';
 import { Result } from './Result';
 
 export class Rule {
@@ -33,7 +33,7 @@ export class Rule {
 		'asserts': array{ ./(sch:report|sch:assert)/${Assert.QUERY}}
 	}`;
 
-	static fromJson(json: JsonRule): Rule {
+	static fromJson(json: RuleJson): Rule {
 		const variables = json.variables.map(rule => Variable.fromJson(rule));
 		const asserts = json.asserts.map(rule => Assert.fromJson(rule));
 
@@ -41,8 +41,8 @@ export class Rule {
 	}
 }
 
-export type JsonRule = {
+export type RuleJson = {
 	context: string;
-	variables: JsonVariable[];
-	asserts: JsonAssert[];
+	variables: VariableJson[];
+	asserts: AssertJson[];
 };

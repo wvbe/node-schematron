@@ -1,7 +1,7 @@
 import { evaluateXPathToNodes } from 'fontoxpath';
 
-import { Variable, JsonVariable } from './Variable';
-import { Rule, JsonRule } from './Rule';
+import { Variable, VariableJson } from './Variable';
+import { Rule, RuleJson } from './Rule';
 import { Result } from './Result';
 
 export class Pattern {
@@ -51,7 +51,7 @@ export class Pattern {
 		'variables': array { ./sch:let/${Variable.QUERY}}
 	}`;
 
-	static fromJson(json: JsonPattern): Pattern {
+	static fromJson(json: PatternJson): Pattern {
 		return new Pattern(
 			json.id,
 			json.rules.map(obj => Rule.fromJson(obj)),
@@ -60,8 +60,8 @@ export class Pattern {
 	}
 }
 
-export type JsonPattern = {
+export type PatternJson = {
 	id: string | null;
-	rules: JsonRule[];
-	variables: JsonVariable[];
+	rules: RuleJson[];
+	variables: VariableJson[];
 };

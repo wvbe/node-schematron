@@ -12,12 +12,12 @@ export class Namespace {
 		"uri": @uri/string()
 	}`;
 
-	static fromJson(json: JsonNamespace): Namespace {
+	static fromJson(json: NamespaceJson): Namespace {
 		return new Namespace(json.prefix, json.uri);
 	}
 }
 
-export type JsonNamespace = {
+export type NamespaceJson = {
 	prefix: string;
 	uri: string;
 };

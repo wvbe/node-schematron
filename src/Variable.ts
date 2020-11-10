@@ -1,7 +1,5 @@
 import { evaluateXPath } from 'fontoxpath';
 
-export type JsonVariable = { name: string; value: string };
-
 export class Variable {
 	name: string;
 	value: string;
@@ -35,7 +33,9 @@ export class Variable {
 		'value': @value/string()
 	}`;
 
-	static fromJson(json: JsonVariable): Variable {
+	static fromJson(json: VariableJson): Variable {
 		return new Variable(json.name, json.value);
 	}
 }
+
+export type VariableJson = { name: string; value: string };

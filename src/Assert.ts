@@ -81,12 +81,12 @@ export class Assert {
 		'isReport': boolean(local-name() = 'report')
 	}`;
 
-	static fromJson(json: JsonAssert): Assert {
+	static fromJson(json: AssertJson): Assert {
 		return new Assert(json.id, json.test, json.message, json.isReport);
 	}
 }
 
-export type JsonAssert = {
+export type AssertJson = {
 	id: string | null;
 	test: string;
 	message: Array<string | Object>;

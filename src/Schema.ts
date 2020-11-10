@@ -1,7 +1,7 @@
 import { evaluateXPath } from 'fontoxpath';
 import { sync } from 'slimdom-sax-parser';
 
-import { Variable, JsonVariable } from './Variable';
+import { Variable, VariableJson } from './Variable';
 import { Phase } from './Phase';
 import { Pattern } from './Pattern';
 import { Namespace } from './Namespace';
@@ -130,7 +130,7 @@ export class Schema {
 		}
 	`;
 
-	static fromJson(json: JsonSchema): Schema {
+	static fromJson(json: SchemaJson): Schema {
 		return new Schema(
 			json.title,
 			json.defaultPhase,
@@ -141,7 +141,7 @@ export class Schema {
 		);
 	}
 
-	static fromDomToJson(schematronDom: Document): JsonSchema {
+	static fromDomToJson(schematronDom: Document): SchemaJson {
 		return evaluateXPath(Schema.QUERY, schematronDom, null, {}, undefined, {
 			language: evaluateXPath.XQUERY_3_1_LANGUAGE
 		});
@@ -156,10 +156,10 @@ export class Schema {
 	}
 }
 
-export type JsonSchema = {
+export type SchemaJson = {
 	title: string;
 	defaultPhase: string | null;
-	variables: JsonVariable[];
+	variables: VariableJson[];
 	phases: Phase[];
 	patterns: Pattern[];
 	namespaces: Namespace[];

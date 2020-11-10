@@ -17,7 +17,7 @@ export class Phase {
 		'variables': array { ./sch:let/${Variable.QUERY}}
 	}`;
 
-	static fromJson(json: JsonPhase): Phase {
+	static fromJson(json: PhaseJson): Phase {
 		return new Phase(
 			json.id,
 			json.active,
@@ -26,7 +26,7 @@ export class Phase {
 	}
 }
 
-export type JsonPhase = {
+export type PhaseJson = {
 	id: string;
 	active: string[];
 	variables: Variable[];
