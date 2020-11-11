@@ -1,8 +1,11 @@
 import { evaluateXPathToNodes } from 'fontoxpath';
 
-import { Variable, VariableJson } from './Variable';
-import { Rule, RuleJson } from './Rule';
 import { Result } from './Result';
+import { Rule, RuleJson } from './Rule';
+import { Variable, VariableJson } from './Variable';
+
+import { FontoxpathOptions } from './types';
+
 
 export class Pattern {
 	id: string | null;
@@ -18,15 +21,19 @@ export class Pattern {
 	validateDocument(
 		documentDom: Document,
 		parentVariables: object | null,
-		namespaceResolver: (prefix?: string | null) => string | null
+		fontoxpathOptions: FontoxpathOptions
 	) {
-		const variables = Variable.reduceVariables(documentDom, this.variables, namespaceResolver, {
+		const variables = Variable.reduceVariables(documentDom, this.variables, fontoxpathOptions, {
 			...parentVariables
 		});
 		const ruleContexts = this.rules.map(rule =>
-			evaluateXPathToNodes('//(' + rule.context + ')', documentDom, null, variables, {
-				namespaceResolver
-			})
+			evaluateXPathToNodes(
+				'//(' + rule.context + ')',
+				documentDom,
+				null,
+				variables,
+				fontoxpathOptions
+			)
 		);
 		const flattenValidationResults = (results: Result[], node: Node): Result[] => {
 			const ruleIndex = ruleContexts.findIndex(context => context.includes(node));
@@ -35,7 +42,7 @@ export class Pattern {
 				results.splice(
 					results.length,
 					0,
-					...rule.validateNode(node, variables, namespaceResolver)
+					...rule.validateNode(node, variables, fontoxpathOptions)
 				);
 			}
 

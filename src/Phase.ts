@@ -1,4 +1,4 @@
-import { Variable } from './Variable';
+import { Variable, VariableJson } from './Variable';
 
 export class Phase {
 	id: string;
@@ -29,5 +29,5 @@ export class Phase {
 export type PhaseJson = {
 	id: string;
 	active: string[];
-	variables: Variable[];
+	variables: VariableJson[];
 };

@@ -1,5 +1,7 @@
 import { evaluateXPath } from 'fontoxpath';
 
+import { FontoxpathOptions } from './types';
+
 export class Variable {
 	name: string;
 	value: string;
@@ -12,16 +14,21 @@ export class Variable {
 	static reduceVariables(
 		context: any,
 		variables: Variable[],
-		namespaceResolver: (prefix?: string | null) => string | null,
+		fontoxpathOptions: FontoxpathOptions,
 		initial: Object | null
 	): Object {
 		return variables.reduce(
 			(mapping, variable) =>
 				Object.assign(mapping, {
 					[variable.name]: variable.value
-						? evaluateXPath(variable.value, context, null, mapping, undefined, {
-								namespaceResolver
-						  })
+						? evaluateXPath(
+								variable.value,
+								context,
+								null,
+								mapping,
+								undefined,
+								fontoxpathOptions
+						  )
 						: context
 				}),
 			initial || {}

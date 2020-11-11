@@ -1,5 +1,8 @@
-import { evaluateXPathToString, evaluateXPathToBoolean } from 'fontoxpath';
+import { evaluateXPathToBoolean, evaluateXPathToString } from 'fontoxpath';
+
 import { Result } from './Result';
+
+import { FontoxpathOptions } from './types';
 
 export class Assert {
 	id: string | null;
@@ -22,7 +25,7 @@ export class Assert {
 	createMessageString(
 		contextNode: Node,
 		variables: Object,
-		namespaceResolver: (prefix?: string | null) => string | null,
+		fontoxpathOptions: FontoxpathOptions,
 		chunks: Array<string | any>
 	): string {
 		return chunks
@@ -38,17 +41,19 @@ export class Assert {
 						contextNode,
 						null,
 						variables,
-						{
-							namespaceResolver
-						}
+						fontoxpathOptions
 					);
 				}
 
 				// <sch:value-of />
 				if (chunk.$type === 'value-of') {
-					return evaluateXPathToString(chunk.select, contextNode, null, variables, {
-						namespaceResolver
-					});
+					return evaluateXPathToString(
+						chunk.select,
+						contextNode,
+						null,
+						variables,
+						fontoxpathOptions
+					);
 				}
 
 				console.log(chunk);
@@ -60,17 +65,21 @@ export class Assert {
 	validateNode(
 		context: Node,
 		variables: Object,
-		namespaceResolver: (prefix?: string | null) => string | null
+		fontoxpathOptions: FontoxpathOptions
 	): Result | null {
-		const outcome = evaluateXPathToBoolean(this.test, context, null, variables, {
-			namespaceResolver
-		});
+		const outcome = evaluateXPathToBoolean(
+			this.test,
+			context,
+			null,
+			variables,
+			fontoxpathOptions
+		);
 		return (!this.isReport && outcome) || (this.isReport && !outcome)
 			? null
 			: new Result(
 					context,
 					this,
-					this.createMessageString(context, variables, namespaceResolver, this.message)
+					this.createMessageString(context, variables, fontoxpathOptions, this.message)
 			  );
 	}
 

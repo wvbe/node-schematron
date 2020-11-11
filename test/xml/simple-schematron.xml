@@ -7,10 +7,22 @@
 		<active pattern="human-age" />
 	</phase>
 
+	<phase id="fail">
+		<active pattern="some-error" />
+	</phase>
+
 	<pattern id="animal-age">
 		<rule context="animal">
 			<assert test="age &lt; 100">
 				Beast "<value-of select="name" />" cannot live longer than a hundred years
+			</assert>
+		</rule>
+	</pattern>
+
+	<pattern id="some-error">
+		<rule context="animal">
+			<assert test=". = $allowed-disp-subj">
+
 			</assert>
 		</rule>
 	</pattern>

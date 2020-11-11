@@ -1,6 +1,8 @@
-import { Variable, VariableJson } from './Variable';
 import { Assert, AssertJson } from './Assert';
 import { Result } from './Result';
+import { Variable, VariableJson } from './Variable';
+
+import { FontoxpathOptions } from './types';
 
 export class Rule {
 	context: string;
@@ -16,14 +18,14 @@ export class Rule {
 	validateNode(
 		context: Node,
 		parentVariables: Object | null,
-		namespaceResolver: (prefix?: string | null) => string | null
+		fontoxpathOptions: FontoxpathOptions
 	): Result[] {
-		const variables = Variable.reduceVariables(context, this.variables, namespaceResolver, {
+		const variables = Variable.reduceVariables(context, this.variables, fontoxpathOptions, {
 			...parentVariables
 		});
 
 		return this.asserts
-			.map(assert => assert.validateNode(context, variables, namespaceResolver))
+			.map(assert => assert.validateNode(context, variables, fontoxpathOptions))
 			.filter(result => result !== null) as Result[];
 	}
 

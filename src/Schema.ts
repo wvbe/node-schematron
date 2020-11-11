@@ -1,11 +1,13 @@
 import { evaluateXPath } from 'fontoxpath';
 import { sync } from 'slimdom-sax-parser';
 
-import { Variable, VariableJson } from './Variable';
-import { Phase } from './Phase';
-import { Pattern } from './Pattern';
-import { Namespace } from './Namespace';
+import { Namespace, NamespaceJson } from './Namespace';
+import { Pattern, PatternJson } from './Pattern';
+import { Phase, PhaseJson } from './Phase';
 import { Result } from './Result';
+import { Variable, VariableJson } from './Variable';
+
+import { FontoxpathOptions } from './types';
 
 export class Schema {
 	public title: string;
@@ -31,24 +33,27 @@ export class Schema {
 		this.namespaces = namespaces;
 	}
 
-	validateString(documentXmlString: string, phaseId?: string): Result[] {
+	validateString(documentXmlString: string, options?: ValidatorOptions): Result[] {
 		// Typescript casting slimdom.Document to Document, which are the same
-		return this.validateDocument((sync(documentXmlString) as unknown) as Document, phaseId);
+		return this.validateDocument((sync(documentXmlString) as unknown) as Document, options);
 	}
 
-	validateDocument(documentDom: Document, phaseId?: string): Result[] {
+	validateDocument(documentDom: Document, options?: ValidatorOptions): Result[] {
+		let { phaseId, debug } = options || {};
 		if (!phaseId) {
 			phaseId = '#DEFAULT';
 		}
 		if (phaseId === '#DEFAULT') {
 			phaseId = this.defaultPhase || '#ALL';
 		}
-
-		const namespaceResolver = this.getNamespaceUriForPrefix.bind(this);
+		const fontoxpathOptions: FontoxpathOptions = {
+			namespaceResolver: this.getNamespaceUriForPrefix.bind(this),
+			debug
+		};
 		const variables = Variable.reduceVariables(
 			documentDom,
 			this.variables,
-			namespaceResolver,
+			fontoxpathOptions,
 			{}
 		);
 
@@ -56,7 +61,7 @@ export class Schema {
 			return this.patterns.reduce(
 				(results: Result[], pattern) =>
 					results.concat(
-						pattern.validateDocument(documentDom, variables, namespaceResolver)
+						pattern.validateDocument(documentDom, variables, fontoxpathOptions)
 					),
 				[]
 			);
@@ -66,7 +71,7 @@ export class Schema {
 		const phaseVariables = Variable.reduceVariables(
 			documentDom,
 			phase?.variables || [],
-			namespaceResolver,
+			fontoxpathOptions,
 			{
 				...variables
 			}
@@ -81,7 +86,7 @@ export class Schema {
 							pattern?.validateDocument(
 								documentDom,
 								phaseVariables,
-								namespaceResolver
+								fontoxpathOptions
 							) || []
 						),
 					[]
@@ -160,7 +165,12 @@ export type SchemaJson = {
 	title: string;
 	defaultPhase: string | null;
 	variables: VariableJson[];
-	phases: Phase[];
-	patterns: Pattern[];
-	namespaces: Namespace[];
+	phases: PhaseJson[];
+	patterns: PatternJson[];
+	namespaces: NamespaceJson[];
+};
+
+export type ValidatorOptions = {
+	phaseId?: string;
+	debug?: boolean;
 };
