@@ -47,7 +47,7 @@ describe('ISO/IEC 19757-3:2016, Section 5.4.5, <let />', () => {
 					</rule>
 				</pattern>
 			</schema>`
-		).validateString(`<xml><thunder /></xml>`, 'test-me');
+		).validateString(`<xml><thunder /></xml>`, { phaseId: 'test-me' });
 		const firstAssert = results[0];
 		expect(firstAssert).toBeTruthy();
 

@@ -6,7 +6,6 @@ import { Variable, VariableJson } from './Variable';
 
 import { FontoxpathOptions } from './types';
 
-
 export class Pattern {
 	id: string | null;
 	rules: Rule[];

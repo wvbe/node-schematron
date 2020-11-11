@@ -29,7 +29,7 @@ describe('ISO/IEC 19757-3:2016, Section 5.4.10, <phase />', () => {
 	// The required id attribute is the name of the phase. The element specifies the phase to be used for validating
 	// documents, for example, by user command.
 	it('The element specifies the phase to be used for validating documents, for example, by user command.', () => {
-		const results = schema.validateString(`<xml />`, 'beta');
+		const results = schema.validateString(`<xml />`, { phaseId: 'beta' });
 
 		// This means that the "alpha" phase was not executed
 		expect(results).toHaveLength(1);
@@ -39,7 +39,7 @@ describe('ISO/IEC 19757-3:2016, Section 5.4.10, <phase />', () => {
 	// "Two names, #ALL and #DEFAULT, have special meanings."
 
 	it('The name #ALL is reserved to denote that all patterns are active.', () => {
-		const results = schema.validateString(`<xml />`, '#ALL');
+		const results = schema.validateString(`<xml />`, { phaseId: '#ALL' });
 
 		// This means that the "alpha" phase was not executed
 		expect(results).toHaveLength(2);
@@ -48,7 +48,7 @@ describe('ISO/IEC 19757-3:2016, Section 5.4.10, <phase />', () => {
 	});
 
 	it('The name #DEFAULT is to denote that the name given in the defaultPhase attribute on the schema element should be used.', () => {
-		const results = schema.validateString(`<xml />`, '#DEFAULT');
+		const results = schema.validateString(`<xml />`, { phaseId: '#DEFAULT' });
 
 		// This means that the "alpha" phase was not executed
 		expect(results).toHaveLength(1);
