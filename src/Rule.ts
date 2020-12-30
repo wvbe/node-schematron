@@ -17,7 +17,7 @@ export class Rule {
 
 	validateNode(
 		context: Node,
-		parentVariables: Object | null,
+		parentVariables: {} | null,
 		fontoxpathOptions: FontoxpathOptions
 	): Result[] {
 		const variables = Variable.reduceVariables(context, this.variables, fontoxpathOptions, {
