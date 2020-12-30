@@ -1,13 +1,14 @@
-import { evaluateXPath } from 'fontoxpath';
+import { evaluateXPath, registerXQueryModule } from 'fontoxpath';
 import { sync } from 'slimdom-sax-parser';
 
-import { Namespace, NamespaceJson } from './Namespace';
+import { Namespace, NamespaceJson, NS_SCH, NS_XSLT } from './Namespace';
 import { Pattern, PatternJson } from './Pattern';
 import { Phase, PhaseJson } from './Phase';
 import { Result } from './Result';
 import { Variable, VariableJson } from './Variable';
 
 import { FontoxpathOptions } from './types';
+import { XsltFunction, XsltFunctionJson } from './XsltFunction';
 
 export class Schema {
 	public title: string;
@@ -16,6 +17,7 @@ export class Schema {
 	public phases: Phase[];
 	public patterns: Pattern[];
 	public namespaces: Namespace[];
+	public functions: XsltFunction[];
 
 	constructor(
 		title: string,
@@ -23,7 +25,8 @@ export class Schema {
 		variables: Variable[],
 		phases: Phase[],
 		patterns: Pattern[],
-		namespaces: Namespace[]
+		namespaces: Namespace[],
+		functions: XsltFunction[]
 	) {
 		this.title = title;
 		this.defaultPhase = defaultPhase;
@@ -31,6 +34,7 @@ export class Schema {
 		this.phases = phases;
 		this.patterns = patterns;
 		this.namespaces = namespaces;
+		this.functions = functions;
 	}
 
 	validateString(documentXmlString: string, options?: ValidatorOptions): Result[] {
@@ -46,10 +50,24 @@ export class Schema {
 		if (phaseId === '#DEFAULT') {
 			phaseId = this.defaultPhase || '#ALL';
 		}
+
+		Namespace.generateXqueryModulesForFunctions(this.namespaces, this.functions).forEach(
+			module => {
+				console.log(module);
+
+				registerXQueryModule(module);
+			}
+		);
+
 		const fontoxpathOptions: FontoxpathOptions = {
 			namespaceResolver: this.getNamespaceUriForPrefix.bind(this),
+			moduleImports: this.namespaces.reduce(
+				(all, namespace) => ({ ...all, [namespace.prefix]: namespace.uri }),
+				{}
+			),
 			debug
 		};
+
 		const variables = Variable.reduceVariables(
 			documentDom,
 			this.variables,
@@ -111,7 +129,7 @@ export class Schema {
 	}
 
 	static QUERY = `
-		declare namespace sch = 'http://purl.oclc.org/dsdl/schematron';
+		declare namespace sch = '${NS_SCH}';
 
 		declare function local:json($node as node()) {
 			if ($node[self::text()])
@@ -131,7 +149,8 @@ export class Schema {
 			'phases': array { $context/sch:phase/${Phase.QUERY}},
 			'patterns': array { $context/sch:pattern/${Pattern.QUERY}},
 			'variables': array { $context/sch:let/${Variable.QUERY}},
-			'namespaces': array { $context/sch:ns/${Namespace.QUERY}}
+			'namespaces': array { $context/sch:ns/${Namespace.QUERY}},
+			'functions': array { $context/Q{${NS_XSLT}}function/${XsltFunction.QUERY}}
 		}
 	`;
 
@@ -142,7 +161,8 @@ export class Schema {
 			json.variables.map(obj => Variable.fromJson(obj)),
 			json.phases.map(obj => Phase.fromJson(obj)),
 			json.patterns.map(obj => Pattern.fromJson(obj)),
-			json.namespaces.map(obj => Namespace.fromJson(obj))
+			json.namespaces.map(obj => Namespace.fromJson(obj)),
+			json.functions.map(obj => XsltFunction.fromJson(obj))
 		);
 	}
 
@@ -168,6 +188,7 @@ export type SchemaJson = {
 	phases: PhaseJson[];
 	patterns: PatternJson[];
 	namespaces: NamespaceJson[];
+	functions: XsltFunctionJson[];
 };
 
 export type ValidatorOptions = {
