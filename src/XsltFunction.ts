@@ -30,19 +30,16 @@ export class XsltFunction {
 		this.returnValue = returnValue;
 	}
 
+	// This method converts an <xsl:function> into an XQuery function definition. That definition is later thrown into
+	// an XQuery (library) module that correlates with the namespace.
 	getXqueryDefinition(_namespace: Namespace): string {
-		// module namespace test = "https://www.example.org/test1";
-		// declare %public function test:hello($a) {
-		// 	"Hello " || $a
-		// };
+		// @TODO More intelligently transform sequence constructors to an actual program
 
-		// @TODO parse localName
-
-		return `declare %public function ${this.localName}(${this.parameters
-			.map(param => `$${param.name}`)
-			.join('\n')}) { (${this.sequenceConstructors
+		const parameters = this.parameters.map(param => `$${param.name}`).join('\n');
+		const sequenceConstructors = this.sequenceConstructors
 			.map(sequenceConstructor => `(${sequenceConstructor})`)
-			.join(', ')}) };`;
+			.join(', ');
+		return `declare %public function ${this.localName}(${parameters}) { (${sequenceConstructors}) };`;
 	}
 
 	isInNamespace(namespace: Namespace): boolean {
@@ -63,6 +60,7 @@ export class XsltFunction {
 			"type": @as/string()
 		}},
 		"sequenceConstructors": array {
+			(: TODO all possible sequence constructors :)
 			./Q{${NS_XSLT}}value-of/string(@select)
 		}
 	}`;

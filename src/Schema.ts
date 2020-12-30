@@ -51,13 +51,10 @@ export class Schema {
 			phaseId = this.defaultPhase || '#ALL';
 		}
 
-		Namespace.generateXqueryModulesForFunctions(this.namespaces, this.functions).forEach(
-			module => {
-				console.log(module);
-
-				registerXQueryModule(module);
-			}
-		);
+		Namespace.generateXqueryModulesForFunctions(
+			this.namespaces,
+			this.functions
+		).forEach(module => registerXQueryModule(module));
 
 		const fontoxpathOptions: FontoxpathOptions = {
 			namespaceResolver: this.getNamespaceUriForPrefix.bind(this),

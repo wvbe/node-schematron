@@ -25,16 +25,18 @@ export class Namespace {
 		namespaces: Namespace[],
 		functions: XsltFunction[]
 	): string[] {
-		return namespaces
-			.filter(namespace => functions.some(func => func.isInNamespace(namespace)))
-			.map(
-				namespace => `
-					module namespace ${namespace.prefix} = "${namespace.uri}";
-					${functions
-						.filter(func => func.isInNamespace(namespace))
-						.map(func => func.getXqueryDefinition(namespace))}
+		return (
+			namespaces
+				// .filter(namespace => functions.some(func => func.isInNamespace(namespace)))
+				.map(
+					namespace => `
+						module namespace ${namespace.prefix} = "${namespace.uri}";
+						${functions
+							.filter(func => func.isInNamespace(namespace))
+							.map(func => func.getXqueryDefinition(namespace))}
 				`
-			);
+				)
+		);
 	}
 }
 
