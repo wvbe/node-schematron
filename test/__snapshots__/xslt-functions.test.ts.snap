@@ -1,0 +1,16 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Custom XPath functions Convertig XSLT to XQUF PEPPOL function using variables 1`] = `
+"declare %public function u:gln($val) {
+	(let $length := string-length($val) - 1
+	let $digits := reverse(for $i in string-to-codepoints(substring($val, 0, $length + 1)) return $i - 48)
+	let $weightedSum := sum(for $i in (0 to $length - 1) return $digits[$i + 1] * (1 + ((($i + 1) mod 2) * 2)))
+	return ((10 - ($weightedSum mod 10)) mod 10 = number(substring($val, $length + 1, 1))))
+};"
+`;
+
+exports[`Custom XPath functions Convertig XSLT to XQUF Simple function 1`] = `
+"declare %public function test:one($input) {
+	(($input > 1))
+};"
+`;
