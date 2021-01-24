@@ -128,6 +128,7 @@ export class Schema {
 	static QUERY = `
 		declare namespace sch = '${NS_SCH}';
 
+
 		declare function local:json($node as node()) {
 			if ($node[self::text()])
 				then $node/string()
@@ -138,6 +139,11 @@ export class Schema {
 					return map:entry($attr/name(), $attr/string())
 			))
 		};
+
+		${[XsltFunction]
+			.filter(X => !!X.FUNCTIONS)
+			.map(X => X.FUNCTIONS)
+			.join('\n\n')}
 
 		let $context := /*[1]
 		return map {
