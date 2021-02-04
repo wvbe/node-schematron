@@ -19,7 +19,7 @@ function parse(xml: TemplateStringsArray) {
 		}
 	);
 }
-
+const sch = new Schema('derp', 'derp', [], [], [], [], []);
 describe('Custom XPath functions', () => {
 	xit('Work in reports and asserts', () => {
 		const schema = Schema.fromString(
@@ -66,7 +66,7 @@ describe('Custom XPath functions', () => {
 					}
 				]
 			});
-			expect(XsltFunction.fromJson(json).getXqueryDefinition()).toMatchSnapshot();
+			expect(XsltFunction.fromJson(json).getXqueryDefinition(sch)).toMatchSnapshot();
 		});
 
 		it('PEPPOL function using variables', () => {
@@ -115,126 +115,56 @@ describe('Custom XPath functions', () => {
 					}
 				]
 			});
-			expect(XsltFunction.fromJson(json).getXqueryDefinition()).toMatchSnapshot();
+			expect(XsltFunction.fromJson(json).getXqueryDefinition(sch)).toMatchSnapshot();
 		});
 
-		it('JUDE function using xsl:choose', () => {
-			const json = parse`<function xmlns="http://www.w3.org/1999/XSL/Transform" name="local-fn:getAge" as="xs:string">
-					<param name="AgeType" as="xs:string"/>
-					<param name="AgeInteger" as="xs:string"/>
-					<param name="AgeHigh" as="xs:string"/>
-					<param name="AgeLow" as="xs:string"/>
+		it('JUDE simple function using xsl:choose', () => {
+			const json = parse`<function xmlns="http://www.w3.org/1999/XSL/Transform" name="local-fn:countAgeID" as="xs:integer">
+			<param name="ID" as="xs:string"/>
+			<choose>
+				<when test="($Persons[@s:id=$ID]/nc:PersonAgeMeasure)">
+					<value-of select="1"/>
+				</when>
+				<otherwise>
+					<value-of select="0"/>
+				</otherwise>
+				</choose>
+			</function>`;
 
-					<variable name="age">
-						<choose>
-							<when test="(string(number($AgeInteger)) eq 'NaN')">
-							<value-of select="round((number($AgeLow) + number($AgeHigh)) div 2)"/>
-							</when>
-							<otherwise>
-							<value-of select="$AgeInteger"/>
-							</otherwise>
-						</choose>
-					</variable>
-					<choose>
-						<when test="(string(number($age)) eq 'NaN')">
-							<if test="($AgeType eq '')">
-								<value-of select="0"/>
-							</if>
-							<if test="not($AgeType eq '')">
-								<value-of select="1"/>
-							</if>
-						</when>
-						<otherwise>
-							<value-of select="$age"/>
-						</otherwise>
-					</choose>
-				</function>`;
+			expect(XsltFunction.fromJson(json).getXqueryDefinition(sch)).toMatchSnapshot();
+		});
 
-			expect(json).toEqual({
-				name: 'local-fn:getAge',
-				returnValue: 'xs:string',
-				parameters: [
-					{
-						name: 'AgeType',
-						type: 'xs:string'
-					},
-					{
-						name: 'AgeInteger',
-						type: 'xs:string'
-					},
-					{
-						name: 'AgeHigh',
-						type: 'xs:string'
-					},
-					{
-						name: 'AgeLow',
-						type: 'xs:string'
-					}
-				],
-				sequenceConstructors: [
-					{
-						type: 'variable',
-						name: 'age',
-						select: null,
-						children: [
-							{
-								type: 'choose',
-								when: {
-									test: "(string(number($AgeInteger)) eq 'NaN')",
-									children: [
-										{
-											type: 'value-of',
-											select:
-												'round((number($AgeLow) + number($AgeHigh)) div 2)'
-										}
-									]
-								},
-								otherwise: [
-									{
-										type: 'value-of',
-										select: '$AgeInteger'
-									}
-								]
-							}
-						]
-					},
-					{
-						type: 'choose',
-						when: {
-							test: "(string(number($age)) eq 'NaN')",
-							children: [
-								{
-									children: [
-										{
-											select: '0',
-											type: 'value-of'
-										}
-									],
-									test: "($AgeType eq '')",
-									type: 'if'
-								},
-								{
-									children: [
-										{
-											select: '1',
-											type: 'value-of'
-										}
-									],
-									test: "not($AgeType eq '')",
-									type: 'if'
-								}
-							]
-						},
-						otherwise: [
-							{
-								type: 'value-of',
-								select: '$age'
-							}
-						]
-					}
-				]
-			});
-			expect(XsltFunction.fromJson(json).getXqueryDefinition()).toMatchSnapshot();
+		it('xsl:choose', () => {
+			const json = parse`<function xmlns="http://www.w3.org/1999/XSL/Transform" name="local:test" as="xs:string">
+				<choose>
+					<when test="X">
+						<value-of select="X"/>
+					</when>
+					<when test="X">
+						<value-of select="X"/>
+					</when>
+					<otherwise>
+						<value-of select="X"/>
+					</otherwise>
+				</choose>
+			</function>`;
+
+			expect(XsltFunction.fromJson(json).getXqueryDefinition(sch)).toMatchSnapshot();
+		});
+
+		it('xsl:for-each', () => {
+			const json = parse`<function xmlns="http://www.w3.org/1999/XSL/Transform" name="local-fn:checkPresent">
+				<param name="find" as="xs:string" />
+				<param name="list" as="xs:string" />
+				<for-each select="tokenize($find,',')">
+					<if test="matches(., $list)">
+						<value-of select="1" />
+					</if>
+				</for-each>
+				<value-of select="0" />
+			</function>`;
+
+			expect(XsltFunction.fromJson(json).getXqueryDefinition(sch)).toMatchSnapshot();
 		});
 	});
 });

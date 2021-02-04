@@ -1,4 +1,4 @@
-import { XsltFunction } from './XsltFunction';
+import { Schema } from './Schema';
 
 export const NS_SCH = 'http://purl.oclc.org/dsdl/schematron';
 export const NS_XSLT = 'http://www.w3.org/1999/XSL/Transform';
@@ -21,19 +21,17 @@ export class Namespace {
 		return new Namespace(json.prefix, json.uri);
 	}
 
-	static generateXqueryModulesForFunctions(
-		namespaces: Namespace[],
-		functions: XsltFunction[]
-	): string[] {
+	static generateXqueryModulesForFunctions(schema: Schema): string[] {
 		return (
-			namespaces
+			schema.namespaces
 				// .filter(namespace => functions.some(func => func.isInNamespace(namespace)))
 				.map(
 					namespace => `
 						module namespace ${namespace.prefix} = "${namespace.uri}";
-						${functions
+						${schema.functions
 							.filter(func => func.isInNamespace(namespace))
-							.map(func => func.getXqueryDefinition(namespace))}
+							.map(func => func.getXqueryDefinition(schema))
+							.join('\n\n')}
 				`
 				)
 		);

@@ -16,7 +16,8 @@ async function validateFile(schema, options, fileName) {
 		process.send({
 			$fileName: fileName,
 			$error: {
-				message: error.message
+				message: error.message,
+				stack: error.stack
 			}
 		});
 	}

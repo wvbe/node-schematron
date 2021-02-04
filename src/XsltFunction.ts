@@ -1,13 +1,15 @@
 import { Namespace, NS_XSLT } from './Namespace';
+import { Schema } from './Schema';
 import {
-	XsltSequenceConstructor,
-	XsltSequenceConstructorVariable,
-	XsltSequenceConstructorValueOf,
-	XsltSequenceConstructorIf,
 	cast,
-	XsltSequenceConstructorJson,
+	compose,
+	XsltSequenceConstructor,
 	XsltSequenceConstructorChoose,
-	compose
+	XsltSequenceConstructorForEach,
+	XsltSequenceConstructorIf,
+	XsltSequenceConstructorJson,
+	XsltSequenceConstructorValueOf,
+	XsltSequenceConstructorVariable
 } from './XsltSequenceConstructor';
 
 type XsltDataType = 'xs:boolean' | 'xs:string';
@@ -56,11 +58,23 @@ export class XsltFunction {
 
 	// This method converts an <xsl:function> into an XQuery function definition. That definition is later thrown into
 	// an XQuery (library) module that correlates with the namespace.
-	getXqueryDefinition(): string {
+	getXqueryDefinition(schema: Schema): string {
 		const parameters = this.parameters
 			.map(param => `\n\t$${param.name} as ${param.type || 'item()'}`)
 			.join(',');
-		const sequenceConstructors = compose(this.sequenceConstructors);
+		const schematronVariables = schema.variables.map(
+			variable =>
+				new XsltSequenceConstructorVariable({
+					type: 'variable',
+					children: [],
+					name: variable.name,
+					select: variable.value
+				})
+		);
+		const sequenceConstructors = compose([
+			...schematronVariables,
+			...this.sequenceConstructors
+		] as XsltSequenceConstructor[]);
 		return `declare %public function ${this.localName}(${parameters}\n) {${sequenceConstructors}\n};`;
 	}
 
@@ -74,13 +88,14 @@ export class XsltFunction {
 		return false;
 	}
 
-	static FUNCTIONS = `declare function local:sequence-constructors($node as node()) {
+	static FUNCTIONS = `declare function local:sequence-constructors($node as node()*) {
 		array {
 			(: TODO all possible sequence constructors :)
 			$node/Q{${NS_XSLT}}variable/${XsltSequenceConstructorVariable.QUERY},
 			$node/Q{${NS_XSLT}}value-of/${XsltSequenceConstructorValueOf.QUERY},
 			$node/Q{${NS_XSLT}}choose/${XsltSequenceConstructorChoose.QUERY},
-			$node/Q{${NS_XSLT}}if/${XsltSequenceConstructorIf.QUERY}
+			$node/Q{${NS_XSLT}}if/${XsltSequenceConstructorIf.QUERY},
+			$node/Q{${NS_XSLT}}for-each/${XsltSequenceConstructorForEach.QUERY}
 		}
 	};`;
 

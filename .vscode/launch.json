@@ -1,0 +1,18 @@
+{
+	// Use IntelliSense to learn about possible attributes.
+	// Hover to view descriptions of existing attributes.
+	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"cwd": "/Users/wybe/Desktop",
+			"type": "pwa-node",
+			"request": "launch",
+			"name": "Launch Program",
+			"skipFiles": ["<node_internals>/**"],
+			"program": "${workspaceFolder}/bin/schematron.js",
+			"outFiles": ["${workspaceFolder}/**/*.js"],
+			"args": ["nibrs-2019.2.sch.xml", "nibrs_GroupAIncident_Sample.xml"]
+		}
+	]
+}

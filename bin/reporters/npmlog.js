@@ -8,7 +8,7 @@ const ASCII_WARNING = '▼';
 const ASCII_CROSSMARK = '✘';
 
 function formatPrefix(char, color, text) {
-	return [ ' ', color, char, text ? '  ' + text : '', ASCII_COLOR_DEFAULT, ' ' ].join('');
+	return [' ', color, char, text ? '  ' + text : '', ASCII_COLOR_DEFAULT, ' '].join('');
 }
 
 // Configure the npmlog object
@@ -51,16 +51,21 @@ module.exports = function bindXunitReporterToEvents(req, events, stream) {
 	/**
 	 * Set some listeners (in chronological order)
 	 */
-	events.on('files', (files) => (stats.files = files.length));
+	events.on('files', files => (stats.files = files.length));
 
-	events.on('schema', (_schema) => {
+	events.on('schema', _schema => {
 		// not doing anything
 	});
 
 	let npmlogItem = null;
 	let timeStartAnalysis = null;
 	events.on('start', () => {
-		npmlog.verbose('init', '%s files located in %s milliseconds', stats.files, Date.now() - timeStartGlob);
+		npmlog.verbose(
+			'init',
+			'%s files located in %s milliseconds',
+			stats.files,
+			Date.now() - timeStartGlob
+		);
 		npmlog.enableProgress();
 		npmlog.info('init', `Starting validation`);
 
@@ -75,7 +80,7 @@ module.exports = function bindXunitReporterToEvents(req, events, stream) {
 		// It's possible the file could not be read, parsed or other
 		if (file.$error) {
 			npmlog.fail(null, file.$fileNameBase);
-			npmlog.fileError(formatPrefix(ASCII_WARNING, ASCII_COLOR_RED), file.$error.message);
+			npmlog.fileError(formatPrefix(ASCII_WARNING, ASCII_COLOR_RED), file.$error.stack);
 			++stats.filesWithErrors;
 			return;
 		}
@@ -90,14 +95,14 @@ module.exports = function bindXunitReporterToEvents(req, events, stream) {
 		// Create a file name caption for validation results in this document
 		if (lastLoggedFileName !== file.$fileName) {
 			lastLoggedFileName = file.$fileName;
-			file.$value.some((v) => !v.isReport)
+			file.$value.some(v => !v.isReport)
 				? // If there is at least one <assert> that failed, the document fails
-					npmlog.fail(null, file.$fileNameBase)
+				  npmlog.fail(null, file.$fileNameBase)
 				: // Or it's happy days, there's only <report> results
-					npmlog.pass(null, file.$fileNameBase);
+				  npmlog.pass(null, file.$fileNameBase);
 		}
 
-		file.$value.forEach((result) => {
+		file.$value.forEach(result => {
 			// Not necessary to emit since `result` was already emitted:
 			// events.emit('assert', assert);
 			if (result.isReport) {
@@ -110,20 +115,20 @@ module.exports = function bindXunitReporterToEvents(req, events, stream) {
 				? npmlog.report(
 						formatPrefix(ASCII_CHECKMARK, ASCII_COLOR_BLUE, result.assertId),
 						result.message.replace(/\s\s+/g, ' ').trim()
-					)
+				  )
 				: npmlog.assert(
 						formatPrefix(ASCII_CROSSMARK, ASCII_COLOR_RED, result.assertId),
 						result.message.replace(/\s\s+/g, ' ').trim()
-					);
+				  );
 		});
 	});
 
-	events.on('end', (exitCode) => {
+	events.on('end', exitCode => {
 		stats.filesWithAssertResults = Object.keys(filesWithAsserts).length;
 		stats.totalTime = Date.now() - timeStartAnalysis;
 
 		const msPerDocument = (stats.totalTime / stats.files).toFixed(2);
-		const documentPerSecond = (stats.files / stats.totalTime * 1000).toFixed(2);
+		const documentPerSecond = ((stats.files / stats.totalTime) * 1000).toFixed(2);
 
 		npmlog.disableProgress();
 

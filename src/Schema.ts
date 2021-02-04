@@ -51,10 +51,9 @@ export class Schema {
 			phaseId = this.defaultPhase || '#ALL';
 		}
 
-		Namespace.generateXqueryModulesForFunctions(
-			this.namespaces,
-			this.functions
-		).forEach(module => registerXQueryModule(module));
+		Namespace.generateXqueryModulesForFunctions(this).forEach(module =>
+			registerXQueryModule(module)
+		);
 
 		const fontoxpathOptions: FontoxpathOptions = {
 			namespaceResolver: this.getNamespaceUriForPrefix.bind(this),
@@ -171,7 +170,8 @@ export class Schema {
 
 	static fromDomToJson(schematronDom: Document): SchemaJson {
 		return evaluateXPath(Schema.QUERY, schematronDom, null, {}, undefined, {
-			language: evaluateXPath.XQUERY_3_1_LANGUAGE
+			language: evaluateXPath.XQUERY_3_1_LANGUAGE,
+			debug: true
 		});
 	}
 

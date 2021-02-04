@@ -1,3 +1,6 @@
+import { NS_XSLT } from './Namespace';
+const TAB = '  ';
+
 class XsltSequenceConstructorAbstract<T> {
 	static TYPE: string;
 	static QUERY: string;
@@ -11,8 +14,7 @@ class XsltSequenceConstructorAbstract<T> {
 		throw new Error('Not implemented');
 	}
 }
-const BR = '\n';
-const TAB = '\t';
+
 export class XsltSequenceConstructorVariable extends XsltSequenceConstructorAbstract<{
 	type: 'variable';
 	name: string;
@@ -28,7 +30,14 @@ export class XsltSequenceConstructorVariable extends XsltSequenceConstructorAbst
 	}`;
 
 	mapToXquf(indent: string): string {
-		return BR + indent + `let $${this.json.name} := ${this.json.select}`;
+		return (
+			indent +
+			`let $${this.json.name} := ${
+				this.json.select
+					? this.json.select
+					: `(${compose(this.json.children.map(cast), indent + TAB)}${indent + TAB})`
+			}`
+		);
 	}
 }
 
@@ -43,7 +52,7 @@ export class XsltSequenceConstructorValueOf extends XsltSequenceConstructorAbstr
 	}`;
 
 	mapToXquf(indent: string): string {
-		return BR + indent + `(${this.json.select})`;
+		return indent + `(${this.json.select})`;
 	}
 }
 
@@ -52,34 +61,39 @@ export class XsltSequenceConstructorChoose extends XsltSequenceConstructorAbstra
 	when: {
 		test: string;
 		children: XsltSequenceConstructor[];
-	};
+	}[];
 	otherwise: XsltSequenceConstructor[];
 }> {
 	static TYPE = 'choose';
 	static QUERY = `map {
 		"type": "choose",
-		"when": map {
-			"test": string(./when/@test),
-			"children": local:sequence-constructors(./when/.)
+		"when": array {
+			./Q{${NS_XSLT}}when/map {
+				"test": string(@test),
+				"children": local:sequence-constructors(./Q{${NS_XSLT}}*)
+			}
 		},
-		"otherwise": local:sequence-constructors(./otherwise)
+		"otherwise": local:sequence-constructors(./Q{${NS_XSLT}}otherwise)
 	}`;
 
 	mapToXquf(indent: string): string {
 		return (
-			BR +
 			indent +
-			`if (${this.json.when.test})` +
-			BR +
+			'(: CHOOSE :)' +
+			indent +
+			this.json.when
+				.map(
+					condition =>
+						`if (${condition.test})` +
+						indent +
+						TAB +
+						`then (${compose(condition.children.map(cast), indent + TAB)}${indent +
+							TAB})`
+				)
+				.join(indent + 'else ') +
 			indent +
 			TAB +
-			`then (${compose(this.json.when.children.map(cast), indent + TAB)}${BR +
-				indent +
-				TAB})` +
-			BR +
-			indent +
-			TAB +
-			`else (${compose(this.json.otherwise.map(cast), indent + TAB)}${BR + indent + TAB})`
+			`else (${compose(this.json.otherwise.map(cast), indent + TAB)}${indent + TAB})`
 		);
 	}
 }
@@ -98,17 +112,42 @@ export class XsltSequenceConstructorIf extends XsltSequenceConstructorAbstract<{
 
 	mapToXquf(indent: string): string {
 		return (
-			BR +
 			indent +
 			`if (${this.json.test})` +
-			BR +
 			indent +
 			TAB +
 			`then ${compose(this.json.children.map(cast), indent + TAB)}` +
-			BR +
 			indent +
 			TAB +
 			`else ()`
+		);
+	}
+}
+export class XsltSequenceConstructorForEach extends XsltSequenceConstructorAbstract<{
+	type: 'for-each';
+	select: string;
+	children: XsltSequenceConstructor[];
+}> {
+	static TYPE = 'for-each';
+	static QUERY = `map {
+		"type": "for-each",
+		"select": string(./@select),
+		"children": local:sequence-constructors(.)
+	}`;
+
+	mapToXquf(indent: string): string {
+		// @TODO create unique intermediary variable names for nested "for" loops:
+		const ref = '$tweak_me';
+		return (
+			indent +
+			`for ${ref} in ${this.json.select}` +
+			indent +
+			TAB +
+			`return ${ref}/(` +
+			compose(this.json.children.map(cast), indent + TAB) +
+			indent +
+			TAB +
+			`)`
 		);
 	}
 }
@@ -117,14 +156,18 @@ const xsltSequenceConstructorClasses = [
 	XsltSequenceConstructorChoose,
 	XsltSequenceConstructorValueOf,
 	XsltSequenceConstructorVariable,
-	XsltSequenceConstructorIf
+	XsltSequenceConstructorIf,
+	XsltSequenceConstructorForEach
 ];
 
 export type XsltSequenceConstructor =
 	| XsltSequenceConstructorChoose
 	| XsltSequenceConstructorVariable
 	| XsltSequenceConstructorValueOf
-	| XsltSequenceConstructorIf;
+	| XsltSequenceConstructorIf
+	| XsltSequenceConstructorForEach;
+
+export type XsltSequenceConstructorJson = XsltSequenceConstructor['json'];
 
 export function cast(json: any) {
 	const XsltSequenceConstructorClass = xsltSequenceConstructorClasses.find(
@@ -140,7 +183,7 @@ export function cast(json: any) {
 
 export function compose(
 	sequenceConstructors: (XsltSequenceConstructor | null)[],
-	priorIndent: string = ''
+	priorIndent: string = '\n'
 ) {
 	const res = sequenceConstructors.filter(Boolean) as XsltSequenceConstructor[];
 
@@ -156,15 +199,10 @@ export function compose(
 		}
 		if (hasVariables) {
 			// There have been variables, but this is not a variable
-			code +=
-				BR +
-				indent +
-				`return (${sequenceConstructor.mapToXquf(indent + TAB)}${BR + indent})`;
+			code += indent + `return (${sequenceConstructor.mapToXquf(indent + TAB)}${indent})`;
 			break;
 		}
 		code += (i === 0 ? '' : ',') + sequenceConstructor.mapToXquf(indent);
 	}
 	return code;
 }
-
-export type XsltSequenceConstructorJson = XsltSequenceConstructor['json'];

@@ -1,29 +1,16 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Custom XPath functions Convertig XSLT to XQUF JUDE function using xsl:choose 1`] = `
-"declare %public function local-fn:getAge(
-	$AgeType as xs:string,
-	$AgeInteger as xs:string,
-	$AgeHigh as xs:string,
-	$AgeLow as xs:string
+exports[`Custom XPath functions Convertig XSLT to XQUF JUDE simple function using xsl:choose 1`] = `
+"declare %public function local-fn:countAgeID(
+	$ID as xs:string
 ) {
-	let $age := null
-	return (
-		if ((string(number($age)) eq 'NaN'))
-			then (
-				if (($AgeType eq ''))
-					then 
-						(0)
-					else (),
-				if (not($AgeType eq ''))
-					then 
-						(1)
-					else ()
-			)
-			else (
-				($age)
-			)
-	)
+  (: CHOOSE :)
+  if (($Persons[@s:id=$ID]/nc:PersonAgeMeasure))
+    then (
+    )
+    else (
+      (0)
+    )
 };"
 `;
 
@@ -31,12 +18,12 @@ exports[`Custom XPath functions Convertig XSLT to XQUF PEPPOL function using var
 "declare %public function u:gln(
 	$val as item()
 ) {
-	let $length := string-length($val) - 1
-	let $digits := reverse(for $i in string-to-codepoints(substring($val, 0, $length + 1)) return $i - 48)
-	let $weightedSum := sum(for $i in (0 to $length - 1) return $digits[$i + 1] * (1 + ((($i + 1) mod 2) * 2)))
-	return (
-		((10 - ($weightedSum mod 10)) mod 10 = number(substring($val, $length + 1, 1)))
-	)
+  let $length := string-length($val) - 1
+  let $digits := reverse(for $i in string-to-codepoints(substring($val, 0, $length + 1)) return $i - 48)
+  let $weightedSum := sum(for $i in (0 to $length - 1) return $digits[$i + 1] * (1 + ((($i + 1) mod 2) * 2)))
+  return (
+    ((10 - ($weightedSum mod 10)) mod 10 = number(substring($val, $length + 1, 1)))
+  )
 };"
 `;
 
@@ -44,6 +31,38 @@ exports[`Custom XPath functions Convertig XSLT to XQUF Simple function 1`] = `
 "declare %public function test:one(
 	$input as xs:decimal
 ) {
-	($input > 1)
+  ($input > 1)
+};"
+`;
+
+exports[`Custom XPath functions Convertig XSLT to XQUF xsl:choose 1`] = `
+"declare %public function local:test(
+) {
+  (: CHOOSE :)
+  if (X)
+    then (
+    )
+  else if (X)
+    then (
+    )
+    else (
+      (X)
+    )
+};"
+`;
+
+exports[`Custom XPath functions Convertig XSLT to XQUF xsl:for-each 1`] = `
+"declare %public function local-fn:checkPresent(
+	$find as xs:string,
+	$list as xs:string
+) {
+  (0),
+  for $sssskkkkeeeettttt in tokenize($find,',')
+    return $sssskkkkeeeettttt/(
+      if (matches(., $list))
+        then 
+          (1)
+        else ()
+    )
 };"
 `;
