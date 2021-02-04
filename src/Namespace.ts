@@ -28,6 +28,15 @@ export class Namespace {
 				.map(
 					namespace => `
 						module namespace ${namespace.prefix} = "${namespace.uri}";
+
+						${schema.namespaces
+							.map(
+								namespace =>
+									`declare namespace ${namespace.prefix} = "${namespace.uri}";`
+							)
+							.join('\n')}
+
+
 						${schema.functions
 							.filter(func => func.isInNamespace(namespace))
 							.map(func => func.getXqueryDefinition(schema))
