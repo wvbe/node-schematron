@@ -4,6 +4,7 @@ exports[`Output Schema.fromString(SCHEMATRON_EXAMPLE) 1`] = `
 Schema {
   "defaultPhase": null,
   "functions": Array [],
+  "isFinishedRegisteringXQuery": true,
   "namespaces": Array [
     Namespace {
       "prefix": "drp",

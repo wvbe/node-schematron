@@ -35,7 +35,10 @@ export class XsltSequenceConstructorVariable extends XsltSequenceConstructorAbst
 			`let $${this.json.name} := ${
 				this.json.select
 					? this.json.select
-					: `(${compose(this.json.children.map(cast), indent + TAB)}${indent + TAB})`
+					: `(${joinSequenceConstructors(
+							this.json.children.map(instantiateSequenceConstructorFromJson),
+							indent + TAB
+					  )}${indent + TAB})`
 			}`
 		);
 	}
@@ -87,13 +90,18 @@ export class XsltSequenceConstructorChoose extends XsltSequenceConstructorAbstra
 						`if (${condition.test})` +
 						indent +
 						TAB +
-						`then (${compose(condition.children.map(cast), indent + TAB)}${indent +
-							TAB})`
+						`then (${joinSequenceConstructors(
+							condition.children.map(instantiateSequenceConstructorFromJson),
+							indent + TAB
+						)}${indent + TAB})`
 				)
 				.join(indent + 'else ') +
 			indent +
 			TAB +
-			`else (${compose(this.json.otherwise.map(cast), indent + TAB)}${indent + TAB})`
+			`else (${joinSequenceConstructors(
+				this.json.otherwise.map(instantiateSequenceConstructorFromJson),
+				indent + TAB
+			)}${indent + TAB})`
 		);
 	}
 }
@@ -116,7 +124,10 @@ export class XsltSequenceConstructorIf extends XsltSequenceConstructorAbstract<{
 			`if (${this.json.test})` +
 			indent +
 			TAB +
-			`then ${compose(this.json.children.map(cast), indent + TAB)}` +
+			`then ${joinSequenceConstructors(
+				this.json.children.map(instantiateSequenceConstructorFromJson),
+				indent + TAB
+			)}` +
 			indent +
 			TAB +
 			`else ()`
@@ -144,7 +155,10 @@ export class XsltSequenceConstructorForEach extends XsltSequenceConstructorAbstr
 			indent +
 			TAB +
 			`return ${ref}/(` +
-			compose(this.json.children.map(cast), indent + TAB) +
+			joinSequenceConstructors(
+				this.json.children.map(instantiateSequenceConstructorFromJson),
+				indent + TAB
+			) +
 			indent +
 			TAB +
 			`)`
@@ -169,7 +183,7 @@ export type XsltSequenceConstructor =
 
 export type XsltSequenceConstructorJson = XsltSequenceConstructor['json'];
 
-export function cast(json: any) {
+export function instantiateSequenceConstructorFromJson(json: any) {
 	const XsltSequenceConstructorClass = xsltSequenceConstructorClasses.find(
 		X => X.TYPE === json.type
 	);
@@ -181,7 +195,7 @@ export function cast(json: any) {
 	return new XsltSequenceConstructorClass(json);
 }
 
-export function compose(
+export function joinSequenceConstructors(
 	sequenceConstructors: (XsltSequenceConstructor | null)[],
 	priorIndent: string = '\n'
 ) {

@@ -1,8 +1,8 @@
 import { Namespace, NS_XSLT } from './Namespace';
 import { Schema } from './Schema';
 import {
-	cast,
-	compose,
+	instantiateSequenceConstructorFromJson,
+	joinSequenceConstructors,
 	XsltSequenceConstructor,
 	XsltSequenceConstructorChoose,
 	XsltSequenceConstructorForEach,
@@ -71,7 +71,7 @@ export class XsltFunction {
 					select: variable.value
 				})
 		);
-		const sequenceConstructors = compose([
+		const sequenceConstructors = joinSequenceConstructors([
 			...schematronVariables,
 			...this.sequenceConstructors
 		] as XsltSequenceConstructor[]);
@@ -117,7 +117,9 @@ export class XsltFunction {
 		return new XsltFunction(
 			json.name,
 			json.parameters,
-			json.sequenceConstructors.map(cast).filter(Boolean) as XsltSequenceConstructor[],
+			json.sequenceConstructors
+				.map(instantiateSequenceConstructorFromJson)
+				.filter(Boolean) as XsltSequenceConstructor[],
 			json.returnValue
 		);
 	}

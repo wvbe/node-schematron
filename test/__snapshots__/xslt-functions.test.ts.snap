@@ -57,8 +57,8 @@ exports[`Custom XPath functions Convertig XSLT to XQUF xsl:for-each 1`] = `
 	$list as xs:string
 ) {
   (0),
-  for $sssskkkkeeeettttt in tokenize($find,',')
-    return $sssskkkkeeeettttt/(
+  for $tweak_me in tokenize($find,',')
+    return $tweak_me/(
       if (matches(., $list))
         then 
           (1)
