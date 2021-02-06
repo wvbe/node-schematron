@@ -19,6 +19,8 @@ export class Schema {
 	public namespaces: Namespace[];
 	public functions: XsltFunction[];
 
+	private isFinishedRegisteringXQuery = false;
+
 	constructor(
 		title: string,
 		defaultPhase: string | null,
@@ -37,6 +39,17 @@ export class Schema {
 		this.functions = functions;
 	}
 
+	private ensureXQueryModulesAreRegistered() {
+		if (this.isFinishedRegisteringXQuery) {
+			// XQUery modles are registered to fontoxpath globally, and they cannot be unregistered. Registering
+			// them twice is an error;
+			return;
+		}
+		Namespace.generateXqueryModulesForFunctions(this).forEach(module =>
+			registerXQueryModule(module)
+		);
+		this.isFinishedRegisteringXQuery = true;
+	}
 	validateString(documentXmlString: string, options?: ValidatorOptions): Result[] {
 		// Typescript casting slimdom.Document to Document, which are the same
 		return this.validateDocument((sync(documentXmlString) as unknown) as Document, options);
@@ -51,9 +64,7 @@ export class Schema {
 			phaseId = this.defaultPhase || '#ALL';
 		}
 
-		Namespace.generateXqueryModulesForFunctions(this).forEach(module =>
-			registerXQueryModule(module)
-		);
+		this.ensureXQueryModulesAreRegistered();
 
 		const fontoxpathOptions: FontoxpathOptions = {
 			namespaceResolver: this.getNamespaceUriForPrefix.bind(this),

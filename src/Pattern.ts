@@ -27,7 +27,7 @@ export class Pattern {
 		});
 		const ruleContexts = this.rules.map(rule =>
 			evaluateXPathToNodes(
-				'//(' + rule.context + ')',
+				rule.context.startsWith('//') ? rule.context : '//(' + rule.context + ')',
 				documentDom,
 				null,
 				variables,
