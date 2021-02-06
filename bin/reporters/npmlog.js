@@ -103,7 +103,7 @@ module.exports = function bindXunitReporterToEvents(req, events, stream) {
 			if (result.isReport) {
 				++stats.totalReports;
 			} else {
-				filesWithAsserts[result.$fileName] = (filesWithAsserts[result.$fileName] || 0) + 1;
+				filesWithAsserts[file.$fileName] = (filesWithAsserts[file.$fileName] || 0) + 1;
 				++stats.totalAsserts;
 			}
 			result.isReport
