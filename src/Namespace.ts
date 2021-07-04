@@ -21,28 +21,26 @@ export class Namespace {
 		return new Namespace(json.prefix, json.uri);
 	}
 
-	static generateXqueryModulesForFunctions(schema: Schema): string[] {
+	static generateLocalModule(schema: Schema, namespace: Namespace): string {
+		return `
+			module namespace ${namespace.prefix} = "${namespace.uri}";
+
+			${schema.namespaces
+				.map(namespace => `declare namespace ${namespace.prefix} = "${namespace.uri}";`)
+				.join('\n')}
+
+
+			${schema.functions
+				.filter(func => func.isInNamespace(namespace))
+				.map(func => func.getXqueryDefinition(schema))
+				.join('\n\n')}
+		`;
+	}
+	static generateAllLocalModules(schema: Schema): string[] {
 		return (
 			schema.namespaces
 				// .filter(namespace => functions.some(func => func.isInNamespace(namespace)))
-				.map(
-					namespace => `
-						module namespace ${namespace.prefix} = "${namespace.uri}";
-
-						${schema.namespaces
-							.map(
-								namespace =>
-									`declare namespace ${namespace.prefix} = "${namespace.uri}";`
-							)
-							.join('\n')}
-
-
-						${schema.functions
-							.filter(func => func.isInNamespace(namespace))
-							.map(func => func.getXqueryDefinition(schema))
-							.join('\n\n')}
-				`
-				)
+				.map(namespace => Namespace.generateLocalModule(schema, namespace))
 		);
 	}
 }

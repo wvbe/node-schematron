@@ -45,9 +45,8 @@ export class Schema {
 			// them twice is an error;
 			return;
 		}
-		Namespace.generateXqueryModulesForFunctions(this).forEach(module =>
-			registerXQueryModule(module)
-		);
+
+		Namespace.generateAllLocalModules(this).forEach(mod => registerXQueryModule(mod));
 		this.isFinishedRegisteringXQuery = true;
 	}
 	validateString(documentXmlString: string, options?: ValidatorOptions): Result[] {

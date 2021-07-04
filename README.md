@@ -158,6 +158,12 @@ Not supported attributes are `@abstract`, `@diagnostics`, `@icon`, `@see`, `@fpi
 -   The schematron query language is XPath 3.1, implemented by [fontoxpath](https://www.npmjs.com/package/fontoxpath). It
     is [not yet feature complete](https://documentation.fontoxml.com/editor/latest/xpath-25591894.html).
 
+# FAQ
+
+- **Are XSLT functions (`<xsl:function>`) supported?** No, unfortunately not. There is a feature branch (
+  `xslt-functions`) with a naive implementation that unfortunately got stuck. More about that problem in
+  [this closing comment in a related ticket](https://github.com/wvbe/node-schematron/issues/1#issuecomment-873554478).
+
 ## License
 
 Copyright (c) 2019 Wybe Minnebo
