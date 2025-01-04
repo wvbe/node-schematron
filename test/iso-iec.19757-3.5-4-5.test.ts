@@ -87,7 +87,7 @@ describe('ISO/IEC 19757-3:2016, Section 5.4.5, <let />', () => {
 
 	it(
 		'It is an error to reference a variable that has not been defined in the current schema, phase, pattern, or ' +
-		'rule, if the query language binding allows this to be determined reliably',
+			'rule, if the query language binding allows this to be determined reliably',
 		() => {
 			expect(() =>
 				Schema.fromString(
