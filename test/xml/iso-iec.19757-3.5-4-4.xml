@@ -1,0 +1,6 @@
+<pattern xmlns="http://purl.oclc.org/dsdl/schematron" is-a="syntax">
+    <rule context="thunder">
+        <let name="lightning" value="string(@foo)"/>
+        <report test="$lightning = 'bar'"><value-of select="$lightning" /></report>
+    </rule>
+</pattern>

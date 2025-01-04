@@ -7,7 +7,7 @@ export class Variable {
 	value: string;
 
 	constructor(name: string, value: string) {
-		this.name = name;
+		this.name = name.trim();
 		this.value = value;
 	}
 

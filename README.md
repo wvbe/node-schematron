@@ -22,6 +22,12 @@ const schema = Schema.fromString(`<schema xmlns="http://purl.oclc.org/dsdl/schem
 	</pattern>
 </schema>`);
 
+// OR
+
+const schema = Schema.fromString(`<schema xmlns="http://purl.oclc.org/dsdl/schematron">
+	<include href="file.xml" />
+</schema>`, { resourceDir: '/path/to/include/files' });
+
 const results = schema.validateString(
 	`<xml foo="err">
 	<thunder foo="bar" />
@@ -119,12 +125,12 @@ I've also noticed there's different ways you can read that text, so please file 
 behaves in a non-standard or buggy way.
 
 | Section | Thing          | Status         |
-| ------- | -------------- | -------------- |
+| ------- | -------------- |----------------|
 | 5.4.1   | `<active />`   | Tests OK       |
 | 5.4.1   | `<active />`   | Tests OK       |
 | 5.4.2   | `<assert />`   | Tests OK       |
 | 5.4.3   | `<extends />`  | Not on roadmap |
-| 5.4.4   | `<include />`  | Not on roadmap |
+| 5.4.4   | `<include />`  | Tests OK       |
 | 5.4.5   | `<let />`      | Tests OK       |
 | 5.4.6   | `<name />`     | Tests OK       |
 | 5.4.7   | `<ns />`       | Experimental   |

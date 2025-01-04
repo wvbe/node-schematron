@@ -1,3 +1,4 @@
+import fs from 'fs';
 import { evaluateXPath } from 'fontoxpath';
 import { sync } from 'slimdom-sax-parser';
 
@@ -135,6 +136,42 @@ export class Schema {
 		}
 	`;
 
+	static getElementsByTagName(node: any, tagName: string) {
+		const elements: any[] = [];
+
+		// Helper function to recursively traverse the DOM tree
+		function traverse(currentNode: HTMLElement) {
+			if (currentNode.nodeType === 1 && currentNode.tagName === tagName) {
+				elements.push(currentNode);
+			}
+			for (const child of <any>currentNode.childNodes) {
+				traverse(child);
+			}
+		}
+
+		traverse(node); // Start traversing from the given node
+		return elements;
+	}
+
+	static processIncludes(schematronDom: Document, options: FromStringOptions = {}): void {
+		const includeElements = this.getElementsByTagName(schematronDom, 'include');
+
+		for (let i = 0; i < includeElements.length; i++) {
+			const includeElement = includeElements[i];
+			const href = includeElement.getAttribute('href');
+			if (href) {
+				const includedContent = fs.readFileSync(`${options.resourceDir}/${href}`, 'utf-8');
+				const includedDom = (sync(includedContent) as unknown) as Document;
+				Schema.processIncludes(includedDom);
+				includeElement.parentNode?.insertBefore(
+					includedDom.documentElement as Node,
+					includeElement
+				);
+				includeElement.parentNode?.removeChild(includeElement);
+			}
+		}
+	}
+
 	static fromJson(json: SchemaJson): Schema {
 		return new Schema(
 			json.title,
@@ -156,8 +193,10 @@ export class Schema {
 		return Schema.fromJson(Schema.fromDomToJson(schematronDom));
 	}
 
-	static fromString(schematronXmlString: string): Schema {
-		return Schema.fromDom((sync(schematronXmlString) as unknown) as Document);
+	static fromString(schematronXmlString: string, options?: FromStringOptions): Schema {
+		const schematronDom = (sync(schematronXmlString) as unknown) as Document;
+		Schema.processIncludes(schematronDom, options);
+		return Schema.fromDom(schematronDom);
 	}
 }
 
@@ -168,6 +207,10 @@ export type SchemaJson = {
 	phases: PhaseJson[];
 	patterns: PatternJson[];
 	namespaces: NamespaceJson[];
+};
+
+export type FromStringOptions = {
+	resourceDir?: string;
 };
 
 export type ValidatorOptions = {
