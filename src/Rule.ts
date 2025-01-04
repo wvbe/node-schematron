@@ -1,3 +1,4 @@
+import { Node } from 'slimdom';
 import { Assert, AssertJson } from './Assert';
 import { Result } from './Result';
 import { Variable, VariableJson } from './Variable';

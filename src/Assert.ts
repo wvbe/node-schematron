@@ -1,4 +1,5 @@
 import { evaluateXPathToBoolean, evaluateXPathToString } from 'fontoxpath';
+import { Node } from 'slimdom';
 
 import { Result } from './Result';
 

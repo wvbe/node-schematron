@@ -1,6 +1,6 @@
 {
 	"name": "node-schematron",
-	"version": "2.0.2",
+	"version": "2.1.0-rc.1",
 	"description": "A pure-JS Schematron implementation for Node, browsers and CLI",
 	"repository": "wvbe/node-schematron",
 	"author": {
@@ -35,14 +35,13 @@
 		"fontoxpath": "^3.18.1",
 		"globby": "^11.0.4",
 		"npmlog": "^4.1.2",
-		"slimdom-sax-parser": "^1.4.1"
+		"slimdom": "^4.3.5"
 	},
 	"devDependencies": {
 		"tsdx": "^0.14.1",
 		"tslib": "^2.3.0",
 		"typescript": "^4.3.5"
 	},
-	"peerDependencies": {},
 	"prettier": {
 		"printWidth": 100,
 		"semi": true,
