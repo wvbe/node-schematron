@@ -1,3 +1,4 @@
+import { Node, serializeToWellFormedString } from 'slimdom';
 import { Assert } from './Assert';
 
 export class Result {
@@ -30,7 +31,7 @@ export class Result {
 		return {
 			assertId: this.assertId,
 			isReport: this.isReport,
-			context: (this.context as HTMLElement).outerHTML,
+			context: serializeToWellFormedString(this.context),
 			message: this.message
 		};
 	}

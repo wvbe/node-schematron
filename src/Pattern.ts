@@ -1,5 +1,5 @@
 import { evaluateXPathToNodes } from 'fontoxpath';
-
+import { Document, Node } from 'slimdom';
 import { Result } from './Result';
 import { Rule, RuleJson } from './Rule';
 import { Variable, VariableJson } from './Variable';
@@ -26,7 +26,7 @@ export class Pattern {
 			...parentVariables
 		});
 		const ruleContexts = this.rules.map(rule =>
-			evaluateXPathToNodes(
+			evaluateXPathToNodes<Node>(
 				'//(' + rule.context + ')',
 				documentDom,
 				null,

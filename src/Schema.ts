@@ -1,5 +1,5 @@
-import { evaluateXPath } from 'fontoxpath';
-import { sync } from 'slimdom-sax-parser';
+import { evaluateXPath, evaluateXPathToNodes } from 'fontoxpath';
+import { Document, Element, parseXmlDocument } from 'slimdom';
 
 import { Namespace, NamespaceJson } from './Namespace';
 import { Pattern, PatternJson } from './Pattern';
@@ -35,7 +35,7 @@ export class Schema {
 
 	validateString(documentXmlString: string, options?: ValidatorOptions): Result[] {
 		// Typescript casting slimdom.Document to Document, which are the same
-		return this.validateDocument((sync(documentXmlString) as unknown) as Document, options);
+		return this.validateDocument(parseXmlDocument(documentXmlString), options);
 	}
 
 	validateDocument(documentDom: Document, options?: ValidatorOptions): Result[] {
@@ -135,6 +135,23 @@ export class Schema {
 		}
 	`;
 
+	static getElementsByTagName(node: any, tagName: string) {
+		const elements: any[] = [];
+
+		// Helper function to recursively traverse the DOM tree
+		function traverse(currentNode: HTMLElement) {
+			if (currentNode.nodeType === 1 && currentNode.tagName === tagName) {
+				elements.push(currentNode);
+			}
+			for (const child of <any>currentNode.childNodes) {
+				traverse(child);
+			}
+		}
+
+		traverse(node); // Start traversing from the given node
+		return elements;
+	}
+
 	static fromJson(json: SchemaJson): Schema {
 		return new Schema(
 			json.title,
@@ -146,18 +163,70 @@ export class Schema {
 		);
 	}
 
-	static fromDomToJson(schematronDom: Document): SchemaJson {
+	/**
+	 * @note This method will always return a promise in a future version of this library. Pass
+	 * an (empty) options argument to start using the new signature.
+	 */
+	static fromDomToJson(schematronDom: Document): SchemaJson;
+	static fromDomToJson(schematronDom: Document, options: DomOptions): Promise<SchemaJson>;
+	static fromDomToJson(
+		schematronDom: Document,
+		options?: DomOptions
+	): SchemaJson | Promise<SchemaJson> {
+		const processIncludes = async (referenceChain: string[], schematronDom: Document) => {
+			if (!options?.fetchReference) {
+				return;
+			}
+
+			await Promise.all(
+				evaluateXPathToNodes<Element>(`.//include[@href]`, schematronDom).map(
+					async includeElement => {
+						const href = includeElement.getAttribute('href')!;
+						const includedDom = parseXmlDocument(
+							await options.fetchReference(href, referenceChain)
+						);
+						if (!includedDom.documentElement) {
+							throw new Error('Included document must have a root element');
+						}
+
+						await processIncludes([...referenceChain, href], includedDom);
+
+						includeElement.parentNode?.insertBefore(
+							includedDom.documentElement,
+							includeElement
+						);
+						includeElement.parentNode?.removeChild(includeElement);
+					}
+				)
+			);
+		};
+
+		if (options) {
+			return processIncludes([], schematronDom).then(() =>
+				Schema.fromDomToJson(schematronDom)
+			);
+		}
+
 		return evaluateXPath(Schema.QUERY, schematronDom, null, {}, undefined, {
 			language: evaluateXPath.XQUERY_3_1_LANGUAGE
 		});
 	}
 
-	static fromDom(schematronDom: Document): Schema {
+	static fromDom(schematronDom: Document): Schema;
+	static fromDom(schematronDom: Document, options: DomOptions): Promise<Schema>;
+	static fromDom(schematronDom: Document, options?: DomOptions): Schema | Promise<Schema> {
+		if (options) {
+			return Schema.fromDomToJson(schematronDom, options).then(json => Schema.fromJson(json));
+		}
 		return Schema.fromJson(Schema.fromDomToJson(schematronDom));
 	}
 
-	static fromString(schematronXmlString: string): Schema {
-		return Schema.fromDom((sync(schematronXmlString) as unknown) as Document);
+	static fromString(schematronXmlString: string): Schema;
+	static fromString(schematronXmlString: string, options: DomOptions): Promise<Schema>;
+	static fromString(schematronXmlString: string, options?: DomOptions): Schema | Promise<Schema> {
+		const schematronDom = parseXmlDocument(schematronXmlString);
+
+		return options ? Schema.fromDom(schematronDom, options) : Schema.fromDom(schematronDom);
 	}
 }
 
@@ -168,6 +237,10 @@ export type SchemaJson = {
 	phases: PhaseJson[];
 	patterns: PatternJson[];
 	namespaces: NamespaceJson[];
+};
+
+export type DomOptions = {
+	fetchReference: (href: string, referenceChain: string[]) => string | Promise<string>;
 };
 
 export type ValidatorOptions = {

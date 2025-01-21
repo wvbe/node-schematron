@@ -1,3 +1,4 @@
+import { Node } from 'slimdom';
 import { Assert, AssertJson } from './Assert';
 import { Result } from './Result';
 import { Variable, VariableJson } from './Variable';
@@ -31,7 +32,7 @@ export class Rule {
 
 	static QUERY = `map {
 		'context': @context/string(),
-		'variables': array { ./sch:let/${Variable.QUERY}},
+		'variables': array { ./(sch:let|sch:param)/${Variable.QUERY}},
 		'asserts': array{ ./(sch:report|sch:assert)/${Assert.QUERY}}
 	}`;
 
@@ -39,7 +40,7 @@ export class Rule {
 		const variables = json.variables.map(rule => Variable.fromJson(rule));
 		const asserts = json.asserts.map(rule => Assert.fromJson(rule));
 
-		return new Rule(json.context, variables, asserts);
+		return new Rule(json.context.trim(), variables, asserts);
 	}
 }
 
